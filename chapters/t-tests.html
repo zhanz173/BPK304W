@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Understanding T-Tests — A Visual Introduction</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,300;1,8..60,400&family=JetBrains+Mono:wght@400;500&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+  :root {
+    --serif: 'Source Serif 4', Georgia, serif;
+    --sans: 'Source Sans 3', 'Helvetica Neue', sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+    --bg: #faf9f6;
+    --text: #1a1a2e;
+    --text-secondary: #555;
+    --accent: #2563eb;
+    --accent-light: #dbeafe;
+    --accent-dark: #1e40af;
+    --green: #059669;
+    --green-light: #d1fae5;
+    --orange: #d97706;
+    --orange-light: #fef3c7;
+    --red: #dc2626;
+    --red-light: #fee2e2;
+    --border: #e5e5e5;
+    --card-bg: #ffffff;
+    --sidenote-bg: #f5f5f0;
+    --col-width: 720px;
+    --margin-width: 240px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { font-size: 17px; scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--serif);
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* === HEADER === */
+  .hero {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 80px 24px 50px;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero .byline {
+    font-family: var(--sans);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+  .hero h1 {
+    font-size: 2.8rem;
+    font-weight: 700;
+    line-height: 1.15;
+    margin-bottom: 20px;
+    letter-spacing: -0.5px;
+  }
+  .hero .subtitle {
+    font-size: 1.25rem;
+    font-weight: 300;
+    color: var(--text-secondary);
+    max-width: 600px;
+    line-height: 1.6;
+  }
+
+  /* === TOC === */
+  .toc {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 36px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .toc h2 {
+    font-family: var(--sans);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+  }
+  .toc ol {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 32px;
+  }
+  .toc li { font-family: var(--sans); font-size: 0.92rem; }
+  .toc a {
+    color: var(--accent);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s;
+  }
+  .toc a:hover { border-bottom-color: var(--accent); }
+
+  /* === MAIN CONTENT GRID === */
+  .article {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  section { padding: 56px 0 32px; }
+  section + section { border-top: 1px solid var(--border); }
+
+  h2 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: -0.3px;
+  }
+  h2 .section-num {
+    font-family: var(--sans);
+    font-weight: 600;
+    color: var(--accent);
+    margin-right: 6px;
+  }
+  h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 36px 0 10px;
+  }
+
+  p { margin-bottom: 16px; }
+
+  /* === SIDENOTE / CALLOUT === */
+  .callout {
+    background: var(--sidenote-bg);
+    border-left: 3px solid var(--accent);
+    padding: 16px 20px;
+    margin: 24px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 0.92rem;
+  }
+  .callout.intuition {
+    border-left-color: var(--green);
+    background: var(--green-light);
+  }
+  .callout.warning {
+    border-left-color: var(--orange);
+    background: var(--orange-light);
+  }
+  .callout-label {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 6px;
+  }
+  .callout.intuition .callout-label { color: var(--green); }
+  .callout.warning .callout-label { color: var(--orange); }
+  .callout .callout-label { color: var(--accent); }
+
+  /* === MATH BLOCKS === */
+  .math-block {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 24px 0;
+    overflow-x: auto;
+    text-align: center;
+  }
+
+  /* === INTERACTIVE FIGURES === */
+  .figure-container {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+    margin: 32px 0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .figure-container .fig-title {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+  .figure-container canvas {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+  }
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px 28px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-family: var(--sans);
+    font-size: 0.85rem;
+    align-items: center;
+  }
+  .control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .control-group label {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .control-group input[type="range"] {
+    width: 140px;
+    accent-color: var(--accent);
+  }
+  .control-group .val {
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    color: var(--accent-dark);
+  }
+
+  .stat-readout {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 24px;
+    margin-top: 12px;
+    font-family: var(--sans);
+    font-size: 0.82rem;
+  }
+  .stat-readout .stat {
+    background: var(--sidenote-bg);
+    padding: 6px 12px;
+    border-radius: 6px;
+  }
+  .stat-readout .stat strong {
+    font-family: var(--mono);
+    color: var(--accent-dark);
+  }
+
+  button.run-btn {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 8px 20px;
+    border: none;
+    border-radius: 6px;
+    background: var(--accent);
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  button.run-btn:hover { background: var(--accent-dark); }
+
+  /* === COMPARISON TABLE === */
+  .comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 24px 0;
+    font-family: var(--sans);
+    font-size: 0.88rem;
+  }
+  .comparison-table th {
+    background: var(--accent);
+    color: #fff;
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+  }
+  .comparison-table th:first-child { border-radius: 8px 0 0 0; }
+  .comparison-table th:last-child { border-radius: 0 8px 0 0; }
+  .comparison-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .comparison-table tr:nth-child(even) td { background: var(--sidenote-bg); }
+
+  /* === FOOTER === */
+  footer {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+    border-top: 1px solid var(--border);
+    font-family: var(--sans);
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+  }
+
+  /* === STEP MARKERS === */
+  .step-flow {
+    display: flex;
+    gap: 16px;
+    margin: 24px 0;
+    flex-wrap: wrap;
+  }
+  .step {
+    flex: 1;
+    min-width: 180px;
+    padding: 16px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    position: relative;
+  }
+  .step .step-num {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .step .step-title {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+  }
+  .step .step-desc {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  .katex { font-size: 1em; }
+  .katex-display { margin: 12px 0; }
+
+  @media (max-width: 640px) {
+    .hero h1 { font-size: 1.8rem; }
+    h2 { font-size: 1.4rem; }
+    .step-flow { flex-direction: column; }
+    .controls { gap: 12px; }
+    .control-group input[type="range"] { width: 100px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============== HERO ============== -->
+<header class="hero">
+  <div class="byline">Chapter 2 · Inferential Statistics</div>
+  <h1>Understanding T-Tests</h1>
+  <p class="subtitle">A visual, interactive guide to comparing means — when to use each type, how the math works, and what the results actually tell you.</p>
+</header>
+
+<!-- ============== TOC ============== -->
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#big-idea">1. The Big Idea</a></li>
+    <li><a href="#one-sample">2. One-Sample T-Test</a></li>
+    <li><a href="#independent">3. Independent Samples T-Test</a></li>
+    <li><a href="#paired">4. Paired Samples T-Test</a></li>
+    <li><a href="#summary">5. Choosing the Right Test</a></li>
+  </ol>
+</nav>
+
+<!-- ============== ARTICLE ============== -->
+<main class="article">
+
+  <!-- ====== SECTION 1: BIG IDEA ====== -->
+  <section id="big-idea">
+    <h2><span class="section-num">1</span> The Big Idea</h2>
+
+    <p>Imagine you're testing a new study method. Your class averaged 72 on a midterm. After using the new method, a sample of 25 students scored an average of 76. Is that improvement <em>real</em>, or could it be plain luck?</p>
+
+    <p>This is the core question behind every t-test: <strong>is the difference we observe bigger than what random chance alone would produce?</strong></p>
+
+    <p>A t-test gives you a <strong>t-statistic</strong> — essentially a ratio of "signal" to "noise":</p>
+
+    <div class="math-block">
+      $$ t = \frac{\text{signal (observed difference)}}{\text{noise (standard error)}} $$
+    </div>
+
+    <p>When the signal is large relative to the noise, the t-value is large, and we become confident the difference is real. When the signal is small relative to the noise, the difference could easily be due to random variation in the data.</p>
+
+    <div class="callout intuition">
+      <div class="callout-label">💡 Intuition</div>
+      Think of it like hearing someone call your name in a crowd. If the room is quiet (low noise), even a soft call (small signal) is easy to detect. In a noisy room, they'd have to shout. The t-statistic measures how loud the "shout" is relative to the background noise.
+    </div>
+
+    <h3>The Role of the P-Value</h3>
+    <p>Once we compute a t-statistic, we ask: <em>"If there were truly no difference (the null hypothesis), how likely would we be to see a t-value this extreme or more?"</em> That probability is the <strong>p-value</strong>.</p>
+
+    <p>By convention, if \( p < 0.05 \), we say the result is <em>statistically significant</em> — meaning it would be quite unlikely (less than 5% chance) to see such a large effect from random chance alone.</p>
+
+    <div class="callout warning">
+      <div class="callout-label">⚠ Common Misconception</div>
+      A p-value is <strong>not</strong> the probability that your hypothesis is true. It's the probability of observing data this extreme <em>assuming the null hypothesis is true</em>. A small p-value gives us reason to doubt the null — it doesn't prove the alternative.
+    </div>
+
+    <h3>Three Flavours of T-Test</h3>
+    <p>All three share the same logic (signal ÷ noise), but differ in <em>what</em> is being compared and <em>how</em> the noise is estimated:</p>
+
+    <table class="comparison-table">
+      <thead>
+        <tr><th>Type</th><th>Question It Answers</th><th>Example</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>One-sample</strong></td>
+          <td>Is a sample mean different from a known value?</td>
+          <td>Do our students score differently from the national average of 70?</td>
+        </tr>
+        <tr>
+          <td><strong>Independent samples</strong></td>
+          <td>Do two separate groups have different means?</td>
+          <td>Do students using Method A score differently from those using Method B?</td>
+        </tr>
+        <tr>
+          <td><strong>Paired samples</strong></td>
+          <td>Does a measurement change within the same subjects?</td>
+          <td>Did the same students score differently before vs. after training?</td>
+        </tr>
+      </tbody>
+    </table>
+
+  </section>
+
+  <!-- ====== SECTION 2: ONE-SAMPLE ====== -->
+  <section id="one-sample">
+    <h2><span class="section-num">2</span> One-Sample T-Test</h2>
+
+    <p>The simplest case: you have one group of measurements and want to know whether their mean differs from some known reference value \( \mu_0 \).</p>
+
+    <h3>The Formula</h3>
+    <div class="math-block">
+      $$ t = \frac{\bar{x} - \mu_0}{s / \sqrt{n}} $$
+    </div>
+
+    <p>Where \( \bar{x} \) is the sample mean, \( \mu_0 \) is the hypothesized population mean, \( s \) is the sample standard deviation, and \( n \) is the sample size. The denominator \( s / \sqrt{n} \) is called the <strong>standard error</strong> — it captures how much the sample mean typically bounces around from sample to sample.</p>
+
+    <div class="callout">
+      <div class="callout-label">📐 Degrees of Freedom</div>
+      For the one-sample t-test, \( \text{df} = n - 1 \). The t-distribution with these degrees of freedom is used to find the p-value. With large \( n \), the t-distribution looks nearly identical to the normal distribution. With small \( n \), it has heavier tails — reflecting the extra uncertainty from estimating the standard deviation from limited data.
+    </div>
+
+    <h3>Interactive: Explore the One-Sample T-Test</h3>
+    <p>Use the sliders below to change the sample mean, standard deviation, and sample size. Watch how the t-statistic and p-value respond. The blue curve is the t-distribution under the null hypothesis; the shaded region shows how extreme your observed t-value is.</p>
+
+    <div class="figure-container">
+      <div class="fig-title">Figure 1 — One-Sample T-Test Visualizer</div>
+      <canvas id="oneSampleCanvas" width="820" height="340"></canvas>
+      <div class="controls">
+        <div class="control-group">
+          <label>Sample Mean ( x̄ )</label>
+          <input type="range" id="os_mean" min="60" max="85" step="0.5" value="76">
+          <span class="val" id="os_mean_val">76.0</span>
+        </div>
+        <div class="control-group">
+          <label>Std Dev ( s )</label>
+          <input type="range" id="os_sd" min="3" max="20" step="0.5" value="10">
+          <span class="val" id="os_sd_val">10.0</span>
+        </div>
+        <div class="control-group">
+          <label>Sample Size ( n )</label>
+          <input type="range" id="os_n" min="5" max="100" step="1" value="25">
+          <span class="val" id="os_n_val">25</span>
+        </div>
+        <div class="control-group">
+          <label>Population Mean ( μ₀ )</label>
+          <input type="range" id="os_mu" min="60" max="85" step="0.5" value="72">
+          <span class="val" id="os_mu_val">72.0</span>
+        </div>
+      </div>
+      <div class="stat-readout" id="os_stats"></div>
+    </div>
+
+    <div class="step-flow">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-title">State Hypotheses</div>
+        <div class="step-desc">\( H_0: \mu = \mu_0 \)<br>\( H_a: \mu \neq \mu_0 \)</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-title">Compute t</div>
+        <div class="step-desc">Calculate the t-statistic using the formula above.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-title">Find p-value</div>
+        <div class="step-desc">Look up \( |t| \) on the t-distribution with \( n-1 \) df.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-title">Decide</div>
+        <div class="step-desc">If \( p < 0.05 \), reject \( H_0 \); the difference is significant.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== SECTION 3: INDEPENDENT ====== -->
+  <section id="independent">
+    <h2><span class="section-num">3</span> Independent Samples T-Test</h2>
+
+    <p>Now suppose you have two <em>separate</em> groups — say, 30 students who used Study Method A and 30 different students who used Method B. You want to know if the two methods produce different average scores.</p>
+
+    <p>The key word here is <strong>independent</strong>: the people in Group A have no special relationship to the people in Group B. There's no pairing or matching.</p>
+
+    <h3>The Formula</h3>
+    <div class="math-block">
+      $$ t = \frac{\bar{x}_1 - \bar{x}_2}{\sqrt{\frac{s_1^2}{n_1} + \frac{s_2^2}{n_2}}} $$
+    </div>
+
+    <p>The numerator is just the difference between the two group means. The denominator combines the variability of both groups into a single standard error, accounting for the fact that each group contributes its own spread and sample size.</p>
+
+    <div class="callout">
+      <div class="callout-label">📐 Degrees of Freedom (Welch's)</div>
+      When the two groups may have different variances (which is common), we use <strong>Welch's approximation</strong> for degrees of freedom. It's a somewhat unwieldy formula, but the idea is simple: the df is somewhere between \( \min(n_1, n_2) - 1 \) and \( n_1 + n_2 - 2 \), adjusted based on how different the two variances are.
+    </div>
+
+    <h3>Interactive: Compare Two Groups</h3>
+    <p>Drag the sliders to adjust each group's mean, standard deviation, and sample size. The visualization shows both group distributions overlaid, along with the resulting t-statistic. Notice how <em>overlap</em> between the distributions relates to the p-value.</p>
+
+    <div class="figure-container">
+      <div class="fig-title">Figure 2 — Independent Samples T-Test Visualizer</div>
+      <canvas id="indCanvas" width="820" height="360"></canvas>
+      <div class="controls">
+        <div class="control-group">
+          <label>Group A Mean</label>
+          <input type="range" id="ind_m1" min="50" max="90" step="0.5" value="72">
+          <span class="val" id="ind_m1_val">72.0</span>
+        </div>
+        <div class="control-group">
+          <label>Group A SD</label>
+          <input type="range" id="ind_s1" min="3" max="20" step="0.5" value="10">
+          <span class="val" id="ind_s1_val">10.0</span>
+        </div>
+        <div class="control-group">
+          <label>Group A n</label>
+          <input type="range" id="ind_n1" min="5" max="80" step="1" value="30">
+          <span class="val" id="ind_n1_val">30</span>
+        </div>
+        <div class="control-group">
+          <label>Group B Mean</label>
+          <input type="range" id="ind_m2" min="50" max="90" step="0.5" value="78">
+          <span class="val" id="ind_m2_val">78.0</span>
+        </div>
+        <div class="control-group">
+          <label>Group B SD</label>
+          <input type="range" id="ind_s2" min="3" max="20" step="0.5" value="10">
+          <span class="val" id="ind_s2_val">10.0</span>
+        </div>
+        <div class="control-group">
+          <label>Group B n</label>
+          <input type="range" id="ind_n2" min="5" max="80" step="1" value="30">
+          <span class="val" id="ind_n2_val">30</span>
+        </div>
+      </div>
+      <div class="stat-readout" id="ind_stats"></div>
+    </div>
+
+    <div class="callout intuition">
+      <div class="callout-label">💡 What to notice</div>
+      Try keeping the means the same but increasing the standard deviations — the distributions overlap more, the t-value shrinks, and the p-value rises. Then try increasing the sample sizes with the same means and SDs — the p-value drops because larger samples give more precise estimates. This is the signal-to-noise story playing out visually.
+    </div>
+  </section>
+
+  <!-- ====== SECTION 4: PAIRED ====== -->
+  <section id="paired">
+    <h2><span class="section-num">4</span> Paired Samples T-Test</h2>
+
+    <p>Sometimes your two measurements come from the <em>same</em> subjects. For example, you test the same 20 students before and after a tutoring program. Each student has a "before" score and an "after" score.</p>
+
+    <p>The paired t-test is clever: instead of comparing two groups, it reduces the problem to a one-sample test on the <strong>differences</strong>. For each subject, compute \( d_i = x_{\text{after},i} - x_{\text{before},i} \), then test whether the mean of those differences is zero.</p>
+
+    <h3>The Formula</h3>
+    <div class="math-block">
+      $$ t = \frac{\bar{d}}{s_d / \sqrt{n}} $$
+    </div>
+
+    <p>Where \( \bar{d} \) is the mean of the pairwise differences and \( s_d \) is the standard deviation of those differences. This is literally a one-sample t-test on the \( d_i \) values, with \( \mu_0 = 0 \).</p>
+
+    <div class="callout intuition">
+      <div class="callout-label">💡 Why pairing helps</div>
+      By looking at <em>within-person</em> differences, you automatically remove all the between-person variability (some students are just naturally better test-takers). This dramatically reduces the noise term, making it easier to detect a real treatment effect. It's like noise-cancelling headphones for your statistics.
+    </div>
+
+    <h3>Interactive: Paired Differences</h3>
+    <p>This visualization shows individual subjects as connected dots (before → after). The bar chart on the right shows each subject's difference score. Try the "Regenerate Data" button to see how different datasets yield different t-values.</p>
+
+    <div class="figure-container">
+      <div class="fig-title">Figure 3 — Paired Samples T-Test Visualizer</div>
+      <canvas id="pairedCanvas" width="820" height="380"></canvas>
+      <div class="controls">
+        <div class="control-group">
+          <label>Number of Pairs</label>
+          <input type="range" id="pr_n" min="5" max="30" step="1" value="15">
+          <span class="val" id="pr_n_val">15</span>
+        </div>
+        <div class="control-group">
+          <label>True Effect Size</label>
+          <input type="range" id="pr_effect" min="-10" max="15" step="0.5" value="5">
+          <span class="val" id="pr_effect_val">5.0</span>
+        </div>
+        <div class="control-group">
+          <label>Within-Subject SD</label>
+          <input type="range" id="pr_sd" min="2" max="15" step="0.5" value="6">
+          <span class="val" id="pr_sd_val">6.0</span>
+        </div>
+        <button class="run-btn" id="pr_regen">Regenerate Data</button>
+      </div>
+      <div class="stat-readout" id="pr_stats"></div>
+    </div>
+
+    <p>Notice that even when the true effect is positive, individual samples can produce non-significant results — especially with small \( n \) or high variability. This is the reality of sampling: statistical tests are not certainties, they're probabilistic judgments.</p>
+  </section>
+
+  <!-- ====== SECTION 5: SUMMARY ====== -->
+  <section id="summary">
+    <h2><span class="section-num">5</span> Choosing the Right Test</h2>
+
+    <p>The decision tree is straightforward:</p>
+
+    <div class="figure-container">
+      <div class="fig-title">Decision Flowchart</div>
+      <canvas id="flowCanvas" width="820" height="300"></canvas>
+    </div>
+
+    <h3>Assumptions</h3>
+    <p>All t-tests assume that the data (or differences, for paired tests) are approximately normally distributed, or that the sample size is large enough that the Central Limit Theorem kicks in (roughly \( n > 30 \)). For the independent-samples test, Welch's version does <em>not</em> require equal variances — which is why it's generally preferred over the classic "Student's" version.</p>
+
+    <h3>Effect Size: Cohen's d</h3>
+    <p>Statistical significance tells you whether an effect exists; <strong>effect size</strong> tells you whether it matters. Cohen's \( d \) expresses the difference in standard deviation units:</p>
+
+    <div class="math-block">
+      $$ d = \frac{\bar{x}_1 - \bar{x}_2}{s_{\text{pooled}}} $$
+    </div>
+
+    <p>Rules of thumb: \( d \approx 0.2 \) is a small effect, \( d \approx 0.5 \) is medium, and \( d \approx 0.8 \) is large. A study might find a "significant" p-value with a tiny effect size if the sample is very large — statistically real, but practically meaningless.</p>
+
+    <div class="callout warning">
+      <div class="callout-label">⚠ Remember</div>
+      Always report both the p-value <em>and</em> the effect size. A result can be statistically significant but trivially small, or non-significant but practically meaningful (just underpowered). Good science requires both pieces of information.
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>Introduction to Statistical Analysis &amp; Signal Processing — Interactive Course Notes</p>
+</footer>
+
+<!-- ============== JAVASCRIPT ============== -->
+<script>
+// ===== UTILITY FUNCTIONS =====
+function gaussianPDF(x, mu, sigma) {
+  const z = (x - mu) / sigma;
+  return Math.exp(-0.5 * z * z) / (sigma * Math.sqrt(2 * Math.PI));
+}
+
+// t-distribution PDF using the beta function approximation
+function tPDF(t, df) {
+  return (gamma((df + 1) / 2) / (Math.sqrt(df * Math.PI) * gamma(df / 2))) *
+         Math.pow(1 + t * t / df, -(df + 1) / 2);
+}
+
+// Log-gamma via Lanczos approximation
+function logGamma(z) {
+  const g = 7;
+  const c = [0.99999999999980993, 676.5203681218851, -1259.1392167224028,
+    771.32342877765313, -176.61502916214059, 12.507343278686905,
+    -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7];
+  if (z < 0.5) return Math.log(Math.PI / Math.sin(Math.PI * z)) - logGamma(1 - z);
+  z -= 1;
+  let x = c[0];
+  for (let i = 1; i < g + 2; i++) x += c[i] / (z + i);
+  const t = z + g + 0.5;
+  return 0.5 * Math.log(2 * Math.PI) + (z + 0.5) * Math.log(t) - t + Math.log(x);
+}
+function gamma(z) { return Math.exp(logGamma(z)); }
+
+// Two-tailed p-value from t and df using numerical integration (Simpson's rule)
+function tCDF(tVal, df) {
+  // Compute P(T <= tVal) using integration from -inf to tVal
+  // We integrate from -large to tVal
+  const a = -40, b = tVal;
+  const nSteps = 2000;
+  const h = (b - a) / nSteps;
+  let sum = tPDF(a, df) + tPDF(b, df);
+  for (let i = 1; i < nSteps; i++) {
+    const x = a + i * h;
+    sum += tPDF(x, df) * (i % 2 === 0 ? 2 : 4);
+  }
+  return Math.max(0, Math.min(1, (h / 3) * sum));
+}
+
+function twoTailP(tVal, df) {
+  const cdf = tCDF(Math.abs(tVal), df);
+  return 2 * (1 - cdf);
+}
+
+const dpr = window.devicePixelRatio || 1;
+
+function setupCanvas(canvas) {
+  const rect = canvas.getBoundingClientRect();
+  const w = canvas.getAttribute('width') | 0;
+  const h = canvas.getAttribute('height') | 0;
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  return ctx;
+}
+
+// ===== ONE-SAMPLE T-TEST =====
+(function() {
+  const canvas = document.getElementById('oneSampleCanvas');
+  const ctx = setupCanvas(canvas);
+  const W = 820, H = 340;
+
+  function draw() {
+    const xbar = parseFloat(document.getElementById('os_mean').value);
+    const s = parseFloat(document.getElementById('os_sd').value);
+    const n = parseInt(document.getElementById('os_n').value);
+    const mu0 = parseFloat(document.getElementById('os_mu').value);
+
+    document.getElementById('os_mean_val').textContent = xbar.toFixed(1);
+    document.getElementById('os_sd_val').textContent = s.toFixed(1);
+    document.getElementById('os_n_val').textContent = n;
+    document.getElementById('os_mu_val').textContent = mu0.toFixed(1);
+
+    const se = s / Math.sqrt(n);
+    const tVal = (xbar - mu0) / se;
+    const df = n - 1;
+    const pVal = twoTailP(tVal, df);
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Draw t-distribution
+    const plotL = 70, plotR = W - 30, plotT = 30, plotB = H - 60;
+    const plotW = plotR - plotL, plotH = plotB - plotT;
+
+    const tRange = 5;
+    function tToX(t) { return plotL + (t + tRange) / (2 * tRange) * plotW; }
+    function yToScreen(y, maxY) { return plotB - (y / maxY) * plotH; }
+
+    // Compute max pdf
+    let maxPdf = 0;
+    for (let i = -tRange; i <= tRange; i += 0.01) {
+      maxPdf = Math.max(maxPdf, tPDF(i, df));
+    }
+    maxPdf *= 1.15;
+
+    // Shaded rejection regions (two-tailed)
+    const abst = Math.abs(tVal);
+    ctx.fillStyle = 'rgba(37, 99, 235, 0.15)';
+    ctx.beginPath();
+    ctx.moveTo(tToX(abst), plotB);
+    for (let t = abst; t <= tRange; t += 0.02) {
+      ctx.lineTo(tToX(t), yToScreen(tPDF(t, df), maxPdf));
+    }
+    ctx.lineTo(tToX(tRange), plotB);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(tToX(-tRange), plotB);
+    for (let t = -tRange; t <= -abst; t += 0.02) {
+      ctx.lineTo(tToX(t), yToScreen(tPDF(t, df), maxPdf));
+    }
+    ctx.lineTo(tToX(-abst), plotB);
+    ctx.fill();
+
+    // t-distribution curve
+    ctx.strokeStyle = '#2563eb';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    for (let t = -tRange; t <= tRange; t += 0.02) {
+      const x = tToX(t);
+      const y = yToScreen(tPDF(t, df), maxPdf);
+      t === -tRange ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Observed t line
+    if (Math.abs(tVal) <= tRange) {
+      ctx.strokeStyle = '#dc2626';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6, 4]);
+      ctx.beginPath();
+      ctx.moveTo(tToX(tVal), plotB);
+      ctx.lineTo(tToX(tVal), plotT);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = '#dc2626';
+      ctx.font = '600 13px "Source Sans 3", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('t = ' + tVal.toFixed(2), tToX(tVal), plotT - 8);
+    }
+
+    // Axes
+    ctx.strokeStyle = '#999';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(plotL, plotB);
+    ctx.lineTo(plotR, plotB);
+    ctx.stroke();
+
+    ctx.fillStyle = '#666';
+    ctx.font = '12px "Source Sans 3", sans-serif';
+    ctx.textAlign = 'center';
+    for (let t = -4; t <= 4; t++) {
+      const x = tToX(t);
+      ctx.beginPath();
+      ctx.moveTo(x, plotB);
+      ctx.lineTo(x, plotB + 5);
+      ctx.stroke();
+      ctx.fillText(t, x, plotB + 18);
+    }
+    ctx.fillText('t-value', plotL + plotW / 2, plotB + 40);
+
+    // Label
+    ctx.fillStyle = '#2563eb';
+    ctx.font = '600 12px "Source Sans 3", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('t-distribution (df = ' + df + ')', plotL + 8, plotT + 16);
+
+    ctx.fillStyle = 'rgba(37, 99, 235, 0.5)';
+    ctx.font = '12px "Source Sans 3", sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('Shaded area = p-value', plotR - 8, plotT + 16);
+
+    // Stats readout
+    document.getElementById('os_stats').innerHTML =
+      `<span class="stat">t = <strong>${tVal.toFixed(3)}</strong></span>` +
+      `<span class="stat">df = <strong>${df}</strong></span>` +
+      `<span class="stat">p = <strong>${pVal < 0.001 ? '< 0.001' : pVal.toFixed(4)}</strong></span>` +
+      `<span class="stat">SE = <strong>${se.toFixed(3)}</strong></span>` +
+      `<span class="stat" style="background:${pVal < 0.05 ? '#d1fae5' : '#fee2e2'}">` +
+      `${pVal < 0.05 ? '✓ Significant' : '✗ Not significant'} at α = 0.05</span>`;
+  }
+
+  ['os_mean', 'os_sd', 'os_n', 'os_mu'].forEach(id => {
+    document.getElementById(id).addEventListener('input', draw);
+  });
+  draw();
+})();
+
+
+// ===== INDEPENDENT SAMPLES T-TEST =====
+(function() {
+  const canvas = document.getElementById('indCanvas');
+  const ctx = setupCanvas(canvas);
+  const W = 820, H = 360;
+
+  function draw() {
+    const m1 = parseFloat(document.getElementById('ind_m1').value);
+    const s1 = parseFloat(document.getElementById('ind_s1').value);
+    const n1 = parseInt(document.getElementById('ind_n1').value);
+    const m2 = parseFloat(document.getElementById('ind_m2').value);
+    const s2 = parseFloat(document.getElementById('ind_s2').value);
+    const n2 = parseInt(document.getElementById('ind_n2').value);
+
+    document.getElementById('ind_m1_val').textContent = m1.toFixed(1);
+    document.getElementById('ind_s1_val').textContent = s1.toFixed(1);
+    document.getElementById('ind_n1_val').textContent = n1;
+    document.getElementById('ind_m2_val').textContent = m2.toFixed(1);
+    document.getElementById('ind_s2_val').textContent = s2.toFixed(1);
+    document.getElementById('ind_n2_val').textContent = n2;
+
+    const se = Math.sqrt(s1*s1/n1 + s2*s2/n2);
+    const tVal = (m1 - m2) / se;
+
+    // Welch's df
+    const v1 = s1*s1/n1, v2 = s2*s2/n2;
+    const df = Math.floor((v1 + v2) * (v1 + v2) / (v1*v1/(n1-1) + v2*v2/(n2-1)));
+    const pVal = twoTailP(tVal, df);
+
+    // Cohen's d
+    const sp = Math.sqrt(((n1-1)*s1*s1 + (n2-1)*s2*s2) / (n1+n2-2));
+    const cohensD = Math.abs(m1 - m2) / sp;
+
+    ctx.clearRect(0, 0, W, H);
+
+    const plotL = 60, plotR = W - 30, plotT = 30, plotB = H - 60;
+    const plotW = plotR - plotL, plotH = plotB - plotT;
+
+    // Determine x range
+    const lo = Math.min(m1 - 4*s1, m2 - 4*s2);
+    const hi = Math.max(m1 + 4*s1, m2 + 4*s2);
+    function valToX(v) { return plotL + (v - lo) / (hi - lo) * plotW; }
+
+    // Max pdf
+    let maxPdf = Math.max(gaussianPDF(m1, m1, s1), gaussianPDF(m2, m2, s2)) * 1.15;
+    function yToScreen(y) { return plotB - (y / maxPdf) * plotH; }
+
+    // Draw Group A distribution
+    ctx.fillStyle = 'rgba(37, 99, 235, 0.12)';
+    ctx.beginPath();
+    ctx.moveTo(valToX(lo), plotB);
+    for (let v = lo; v <= hi; v += (hi-lo)/400) {
+      ctx.lineTo(valToX(v), yToScreen(gaussianPDF(v, m1, s1)));
+    }
+    ctx.lineTo(valToX(hi), plotB);
+    ctx.fill();
+
+    ctx.strokeStyle = '#2563eb';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    for (let v = lo; v <= hi; v += (hi-lo)/400) {
+      const x = valToX(v), y = yToScreen(gaussianPDF(v, m1, s1));
+      v === lo ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Draw Group B distribution
+    ctx.fillStyle = 'rgba(220, 38, 38, 0.12)';
+    ctx.beginPath();
+    ctx.moveTo(valToX(lo), plotB);
+    for (let v = lo; v <= hi; v += (hi-lo)/400) {
+      ctx.lineTo(valToX(v), yToScreen(gaussianPDF(v, m2, s2)));
+    }
+    ctx.lineTo(valToX(hi), plotB);
+    ctx.fill();
+
+    ctx.strokeStyle = '#dc2626';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    for (let v = lo; v <= hi; v += (hi-lo)/400) {
+      const x = valToX(v), y = yToScreen(gaussianPDF(v, m2, s2));
+      v === lo ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Mean markers
+    ctx.setLineDash([5, 4]);
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = '#2563eb';
+    ctx.beginPath(); ctx.moveTo(valToX(m1), plotB); ctx.lineTo(valToX(m1), plotT + 20); ctx.stroke();
+    ctx.strokeStyle = '#dc2626';
+    ctx.beginPath(); ctx.moveTo(valToX(m2), plotB); ctx.lineTo(valToX(m2), plotT + 20); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Axis
+    ctx.strokeStyle = '#999';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(plotL, plotB); ctx.lineTo(plotR, plotB); ctx.stroke();
+
+    const tickStep = Math.ceil((hi - lo) / 10);
+    const startTick = Math.ceil(lo / tickStep) * tickStep;
+    ctx.fillStyle = '#666';
+    ctx.font = '12px "Source Sans 3", sans-serif';
+    ctx.textAlign = 'center';
+    for (let v = startTick; v <= hi; v += tickStep) {
+      ctx.beginPath(); ctx.moveTo(valToX(v), plotB); ctx.lineTo(valToX(v), plotB + 5); ctx.stroke();
+      ctx.fillText(v, valToX(v), plotB + 18);
+    }
+    ctx.fillText('Score', plotL + plotW/2, plotB + 42);
+
+    // Legends
+    ctx.font = '600 13px "Source Sans 3", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#2563eb'; ctx.fillText('● Group A (x̄ = ' + m1.toFixed(1) + ')', plotL + 10, plotT + 16);
+    ctx.fillStyle = '#dc2626'; ctx.fillText('● Group B (x̄ = ' + m2.toFixed(1) + ')', plotL + 10, plotT + 34);
+
+    // Difference arrow
+    if (Math.abs(m1 - m2) > 0.5) {
+      const arrY = plotT + 50;
+      ctx.strokeStyle = '#333';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(valToX(m1), arrY);
+      ctx.lineTo(valToX(m2), arrY);
+      ctx.stroke();
+      // arrowhead
+      const dir = m2 > m1 ? 1 : -1;
+      ctx.beginPath();
+      ctx.moveTo(valToX(m2), arrY);
+      ctx.lineTo(valToX(m2) - dir*8, arrY - 5);
+      ctx.lineTo(valToX(m2) - dir*8, arrY + 5);
+      ctx.fill();
+      ctx.fillStyle = '#333';
+      ctx.font = '12px "Source Sans 3", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Δ = ' + Math.abs(m1-m2).toFixed(1), (valToX(m1)+valToX(m2))/2, arrY - 8);
+    }
+
+    document.getElementById('ind_stats').innerHTML =
+      `<span class="stat">t = <strong>${tVal.toFixed(3)}</strong></span>` +
+      `<span class="stat">df ≈ <strong>${df}</strong></span>` +
+      `<span class="stat">p = <strong>${pVal < 0.001 ? '< 0.001' : pVal.toFixed(4)}</strong></span>` +
+      `<span class="stat">Cohen's d = <strong>${cohensD.toFixed(2)}</strong></span>` +
+      `<span class="stat" style="background:${pVal < 0.05 ? '#d1fae5' : '#fee2e2'}">` +
+      `${pVal < 0.05 ? '✓ Significant' : '✗ Not significant'} at α = 0.05</span>`;
+  }
+
+  ['ind_m1','ind_s1','ind_n1','ind_m2','ind_s2','ind_n2'].forEach(id => {
+    document.getElementById(id).addEventListener('input', draw);
+  });
+  draw();
+})();
+
+
+// ===== PAIRED SAMPLES T-TEST =====
+(function() {
+  const canvas = document.getElementById('pairedCanvas');
+  const ctx = setupCanvas(canvas);
+  const W = 820, H = 380;
+
+  let data = [];
+
+  function generateData() {
+    const n = parseInt(document.getElementById('pr_n').value);
+    const eff = parseFloat(document.getElementById('pr_effect').value);
+    const sdWithin = parseFloat(document.getElementById('pr_sd').value);
+    data = [];
+    for (let i = 0; i < n; i++) {
+      const baseMean = 65 + Math.random() * 20; // between-subject variability
+      const before = baseMean + (Math.random() + Math.random() + Math.random() - 1.5) * 6;
+      const after = before + eff + (Math.random() + Math.random() + Math.random() - 1.5) * sdWithin * 0.816;
+      data.push({ before, after, diff: after - before });
+    }
+    drawPaired();
+  }
+
+  function drawPaired() {
+    const n = data.length;
+    if (n === 0) return;
+
+    document.getElementById('pr_n_val').textContent = n;
+    document.getElementById('pr_effect_val').textContent = parseFloat(document.getElementById('pr_effect').value).toFixed(1);
+    document.getElementById('pr_sd_val').textContent = parseFloat(document.getElementById('pr_sd').value).toFixed(1);
+
+    const diffs = data.map(d => d.diff);
+    const meanD = diffs.reduce((a,b) => a+b, 0) / n;
+    const sdD = Math.sqrt(diffs.reduce((a,b) => a + (b - meanD)**2, 0) / (n-1));
+    const se = sdD / Math.sqrt(n);
+    const tVal = se > 0 ? meanD / se : 0;
+    const df = n - 1;
+    const pVal = twoTailP(tVal, df);
+
+    ctx.clearRect(0, 0, W, H);
+
+    // LEFT PANEL: slope chart (before/after)
+    const panelGap = 40;
+    const leftW = (W - panelGap) * 0.5;
+    const rightW = (W - panelGap) * 0.5;
+    const plotT = 50, plotB = H - 50;
+
+    const allVals = data.flatMap(d => [d.before, d.after]);
+    const minV = Math.min(...allVals) - 5;
+    const maxV = Math.max(...allVals) + 5;
+    function valToY(v) { return plotB - (v - minV) / (maxV - minV) * (plotB - plotT); }
+
+    const colBefore = 100, colAfter = leftW - 40;
+
+    // Panel labels
+    ctx.fillStyle = '#999';
+    ctx.font = '600 12px "Source Sans 3", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Before', colBefore, plotT - 14);
+    ctx.fillText('After', colAfter, plotT - 14);
+
+    // Left panel title
+    ctx.fillStyle = '#2563eb';
+    ctx.font = '700 13px "Source Sans 3", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('Paired Observations', 20, 28);
+
+    // Draw lines & dots
+    for (let i = 0; i < n; i++) {
+      const d = data[i];
+      const yB = valToY(d.before);
+      const yA = valToY(d.after);
+      const positive = d.after >= d.before;
+
+      ctx.strokeStyle = positive ? 'rgba(5, 150, 105, 0.4)' : 'rgba(220, 38, 38, 0.4)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(colBefore, yB); ctx.lineTo(colAfter, yA); ctx.stroke();
+
+      ctx.fillStyle = '#2563eb';
+      ctx.beginPath(); ctx.arc(colBefore, yB, 4, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = positive ? '#059669' : '#dc2626';
+      ctx.beginPath(); ctx.arc(colAfter, yA, 4, 0, Math.PI*2); ctx.fill();
+    }
+
+    // Y axis ticks (left panel)
+    ctx.strokeStyle = '#ccc';
+    ctx.lineWidth = 0.5;
+    ctx.fillStyle = '#999';
+    ctx.font = '11px "Source Sans 3", sans-serif';
+    ctx.textAlign = 'right';
+    const tickStepV = Math.ceil((maxV - minV) / 8);
+    const startV = Math.ceil(minV / tickStepV) * tickStepV;
+    for (let v = startV; v <= maxV; v += tickStepV) {
+      ctx.beginPath(); ctx.moveTo(50, valToY(v)); ctx.lineTo(leftW - 20, valToY(v)); ctx.stroke();
+      ctx.fillText(Math.round(v), 46, valToY(v) + 4);
+    }
+
+    // RIGHT PANEL: difference bar chart
+    const rStart = leftW + panelGap;
+    const barAreaW = rightW - 60;
+    const barW = Math.min(24, (barAreaW - n) / n);
+    const barGap = (barAreaW - barW * n) / (n + 1);
+    const zeroY = plotT + (plotB - plotT) / 2;
+
+    const maxAbsDiff = Math.max(...diffs.map(Math.abs), 1);
+    function diffToH(d) { return (d / maxAbsDiff) * (plotB - plotT) / 2 * 0.85; }
+
+    // Zero line
+    ctx.strokeStyle = '#999';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(rStart, zeroY); ctx.lineTo(rStart + barAreaW, zeroY); ctx.stroke();
+
+    // Right panel title
+    ctx.fillStyle = '#2563eb';
+    ctx.font = '700 13px "Source Sans 3", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('Difference Scores (After − Before)', rStart, 28);
+
+    for (let i = 0; i < n; i++) {
+      const d = diffs[i];
+      const bx = rStart + barGap + i * (barW + barGap);
+      const bh = diffToH(d);
+      ctx.fillStyle = d >= 0 ? 'rgba(5, 150, 105, 0.65)' : 'rgba(220, 38, 38, 0.65)';
+      if (d >= 0) {
+        ctx.fillRect(bx, zeroY - bh, barW, bh);
+      } else {
+        ctx.fillRect(bx, zeroY, barW, -bh);
+      }
+    }
+
+    // Mean difference line
+    const meanH = diffToH(meanD);
+    const meanLineY = zeroY - meanH;
+    ctx.strokeStyle = '#1a1a2e';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6, 3]);
+    ctx.beginPath(); ctx.moveTo(rStart, meanLineY); ctx.lineTo(rStart + barAreaW, meanLineY); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#1a1a2e';
+    ctx.font = '600 11px "Source Sans 3", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('d̄ = ' + meanD.toFixed(2), rStart + barAreaW + 4, meanLineY + 4);
+
+    // Zero label
+    ctx.fillStyle = '#999';
+    ctx.font = '11px "Source Sans 3", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('0', rStart + barAreaW + 4, zeroY + 4);
+
+    document.getElementById('pr_stats').innerHTML =
+      `<span class="stat">Mean diff (d̄) = <strong>${meanD.toFixed(2)}</strong></span>` +
+      `<span class="stat">SD of diffs = <strong>${sdD.toFixed(2)}</strong></span>` +
+      `<span class="stat">t = <strong>${tVal.toFixed(3)}</strong></span>` +
+      `<span class="stat">df = <strong>${df}</strong></span>` +
+      `<span class="stat">p = <strong>${pVal < 0.001 ? '< 0.001' : pVal.toFixed(4)}</strong></span>` +
+      `<span class="stat" style="background:${pVal < 0.05 ? '#d1fae5' : '#fee2e2'}">` +
+      `${pVal < 0.05 ? '✓ Significant' : '✗ Not significant'} at α = 0.05</span>`;
+  }
+
+  ['pr_n', 'pr_effect', 'pr_sd'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () => generateData());
+  });
+  document.getElementById('pr_regen').addEventListener('click', generateData);
+  generateData();
+})();
+
+
+// ===== DECISION FLOWCHART =====
+(function() {
+  const canvas = document.getElementById('flowCanvas');
+  const ctx = setupCanvas(canvas);
+  const W = 820, H = 300;
+
+  function drawFlow() {
+    ctx.clearRect(0, 0, W, H);
+
+    const cx = W / 2, topY = 40;
+
+    // Decision diamond
+    function drawDiamond(x, y, w, h, text, color) {
+      ctx.fillStyle = color || '#f0f4ff';
+      ctx.strokeStyle = '#2563eb';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(x, y - h/2);
+      ctx.lineTo(x + w/2, y);
+      ctx.lineTo(x, y + h/2);
+      ctx.lineTo(x - w/2, y);
+      ctx.closePath();
+      ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#1a1a2e';
+      ctx.font = '600 13px "Source Sans 3", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const lines = text.split('\n');
+      lines.forEach((l, i) => ctx.fillText(l, x, y + (i - (lines.length-1)/2) * 16));
+    }
+
+    function drawBox(x, y, w, h, text, color) {
+      ctx.fillStyle = color || '#dbeafe';
+      ctx.strokeStyle = '#2563eb';
+      ctx.lineWidth = 2;
+      const r = 8;
+      ctx.beginPath();
+      ctx.moveTo(x - w/2 + r, y - h/2);
+      ctx.lineTo(x + w/2 - r, y - h/2);
+      ctx.quadraticCurveTo(x + w/2, y - h/2, x + w/2, y - h/2 + r);
+      ctx.lineTo(x + w/2, y + h/2 - r);
+      ctx.quadraticCurveTo(x + w/2, y + h/2, x + w/2 - r, y + h/2);
+      ctx.lineTo(x - w/2 + r, y + h/2);
+      ctx.quadraticCurveTo(x - w/2, y + h/2, x - w/2, y + h/2 - r);
+      ctx.lineTo(x - w/2, y - h/2 + r);
+      ctx.quadraticCurveTo(x - w/2, y - h/2, x - w/2 + r, y - h/2);
+      ctx.closePath();
+      ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#1a1a2e';
+      ctx.font = '700 13px "Source Sans 3", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const lines = text.split('\n');
+      lines.forEach((l, i) => ctx.fillText(l, x, y + (i - (lines.length-1)/2) * 17));
+    }
+
+    function arrow(x1, y1, x2, y2, label) {
+      ctx.strokeStyle = '#666';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+      // arrowhead
+      const angle = Math.atan2(y2-y1, x2-x1);
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(x2 - 8*Math.cos(angle - 0.4), y2 - 8*Math.sin(angle - 0.4));
+      ctx.lineTo(x2 - 8*Math.cos(angle + 0.4), y2 - 8*Math.sin(angle + 0.4));
+      ctx.closePath();
+      ctx.fillStyle = '#666';
+      ctx.fill();
+      if (label) {
+        ctx.fillStyle = '#2563eb';
+        ctx.font = '600 12px "Source Sans 3", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        const mx = (x1+x2)/2, my = (y1+y2)/2;
+        ctx.fillText(label, mx, my - 4);
+      }
+    }
+
+    // Layout
+    const q1y = 60;
+    const q2y = 160;
+    const resY = 255;
+
+    drawDiamond(cx, q1y, 260, 70, 'How many groups\nare you comparing?');
+    arrow(cx - 130, q1y, 170, q1y, '');
+    arrow(cx - 50, q1y + 35, cx - 50, q1y + 35, '');
+
+    // Left branch: 1 group
+    drawBox(150, q2y, 180, 50, 'Comparing to a\nknown value?', '#f0f4ff');
+    arrow(cx - 90, q1y + 35, 150, q2y - 25, 'One group');
+    drawBox(150, resY, 180, 50, 'One-Sample\nT-Test', '#d1fae5');
+    arrow(150, q2y + 25, 150, resY - 25, 'Yes');
+
+    // Right branch: 2 groups
+    drawDiamond(cx + 200, q2y, 260, 70, 'Are the subjects\nthe same people?');
+    arrow(cx + 90, q1y + 35, cx + 200, q2y - 35, 'Two groups');
+
+    drawBox(cx + 60, resY, 180, 50, 'Independent\nSamples T-Test', '#dbeafe');
+    arrow(cx + 140, q2y + 35, cx + 60, resY - 25, 'No');
+
+    drawBox(cx + 340, resY, 180, 50, 'Paired Samples\nT-Test', '#fef3c7');
+    arrow(cx + 260, q2y + 35, cx + 340, resY - 25, 'Yes');
+
+    ctx.textBaseline = 'alphabetic';
+  }
+
+  drawFlow();
+})();
+
+
+// ===== RENDER KATEX =====
+document.addEventListener('DOMContentLoaded', () => {
+  renderMathInElement(document.body, {
+    delimiters: [
+      {left: '$$', right: '$$', display: true},
+      {left: '\\(', right: '\\)', display: false},
+      {left: '$', right: '$', display: false}
+    ],
+    throwOnError: false
+  });
+});
+</script>
+
+</body>
+</html>
