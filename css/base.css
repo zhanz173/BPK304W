@@ -1,0 +1,63 @@
+:root {
+  --serif: 'Source Serif 4', Georgia, serif;
+  --sans: 'Source Sans 3', 'Helvetica Neue', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+  --bg: #faf9f6;
+  --text: #1a1a2e;
+  --text-secondary: #555;
+  --accent: #2563eb;
+  --accent-light: #dbeafe;
+  --accent-dark: #1e40af;
+  --green: #059669;
+  --green-light: #d1fae5;
+  --orange: #d97706;
+  --orange-light: #fef3c7;
+  --red: #dc2626;
+  --red-light: #fee2e2;
+  --border: #e5e5e5;
+  --card-bg: #ffffff;
+  --sidenote-bg: #f5f5f0;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 17px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--serif);
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.75;
+  -webkit-font-smoothing: antialiased;
+}
+
+.hero h1 {
+  font-size: 2.8rem;
+  font-weight: 700;
+  line-height: 1.15;
+  margin-bottom: 20px;
+  letter-spacing: -0.5px;
+}
+
+.hero .subtitle {
+  font-weight: 300;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+footer {
+  font-family: var(--sans);
+}
+
+@media (max-width: 640px) {
+  .hero h1 {
+    font-size: 1.8rem;
+  }
+}

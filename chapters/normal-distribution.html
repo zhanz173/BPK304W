@@ -1,0 +1,1529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Descriptive Statistics & the CLT — An Introduction</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,300;1,8..60,400&family=JetBrains+Mono:wght@400;500&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/chapter.css">
+</head>
+<body>
+
+<!-- ============== HERO ============== -->
+<header class="hero">
+  <div class="byline">Week 1 · Descriptive Statistics</div>
+  <h1>Descriptive Statistics, the Central Limit Theorem</h1>
+  <p class="subtitle">Descriptive statistics quantitatively summarize and describe the basic features of a dataset. Unlike inferential statistics, descriptive statistics do not attempt to make predictions or draw conclusions beyond the data currently being analyzed.</p>
+  <p class="subtitle">The Central Limit Theorem (CLT) is a fundamental statistical principle that describes how the distribution of sample means approaches a normal distribution as the sample size increases, regardless of the shape of the population distribution. It allows us to make inferences about population parameters based on sample statistics.</p>
+</header>
+
+<!-- ============== TOC ============== -->
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#data-types">1. Types of Data</a></li>
+    <li><a href="#central-tendency">2. Measures of Central Tendency</a></li>
+    <li><a href="#variability">3. Measures of Variability</a></li>
+    <li><a href="#distribution-shape">4. Shape of a Distribution</a></li>
+    <li><a href="#pop-vs-sample">5. Population vs. Sample</a></li>
+    <li><a href="#clt">6. The Central Limit Theorem</a></li>
+    <li><a href="#sd-vs-se">7. SD vs. Standard Error</a></li>
+    <li><a href="#clt-failures">8. When CLT Fails</a></li>
+  </ol>
+</nav>
+
+<!-- ============== ARTICLE ============== -->
+<main class="article">
+
+  <!-- ====== SECTION 1 ====== -->
+  <section id="data-types">
+    <h2><span class="section-num">1</span> Types of Data</h2>
+
+    <p>The <em>type</em> of data dictates the statistical tools you are allowed to use. Applying the wrong tool to the wrong data type is one of the most common errors in practice.</p>
+
+    <div class="dtype-grid">
+      <div class="dtype-card">
+        <h4>Categorical</h4>
+        <dl>
+          <dt>Nominal</dt>
+          <dd>These variables describe categories with no natural or inherent order. One category is not "higher" or "better" than another.<br><em>Examples: blood type, eye colour, sport played.</em></dd>
+          <dt>Ordinal</dt>
+          <dd>Ordered categories, but the gaps between ranks are not meaningful.<br><em>Examples:Education level (High school < PhD), satisfaction ratings (Low < High).</em></dd>
+        </dl>
+      </div>
+      <div class="dtype-card">
+        <h4>Numerical</h4>
+        <dl>
+          <dt>Discrete</dt>
+          <dd>Countable numbers, typically whole numbers, where values are counts.<br><em>Examples: number of injuries, heartbeats per minute.</em></dd>
+          <dt>Continuous</dt>
+          <dd>Measurable quantities that can take any value within a range.<br><em>Examples: height, stride length, reaction time, body temperature.</em></dd>
+        </dl>
+      </div>
+    </div>
+
+    <div class="callout warning">
+      <div class="callout-label">⚠ Example</div>
+      A satisfaction ratings of 1–10 <em>looks</em> numerical but is ordinal — the difference between "4" and "5" is not necessarily the same as between "8" and "9". Using a mean on ordinal data treats the gaps as equal which is problematic.
+    </div>
+  </section>
+
+  <!-- ====== SECTION 2 ====== -->
+  <section id="central-tendency">
+    <h2><span class="section-num">2</span> Measures of Central Tendency</h2>
+
+    <p>A measure of central tendency answers: <em>"What does a typical value look like?"</em> The three main options each have different strengths and blind spots.</p>
+
+    <table class="comparison-table">
+      <thead><tr><th>Measure</th><th>Definition</th><th>Best Used When</th><th>Weakness</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Mean</strong> \( \bar{x} \)</td>
+          <td>Sum of all values divided by count</td>
+          <td>Symmetric data with no extreme outliers</td>
+          <td>Pulled strongly toward extreme values. Typically not a good summary measure in data with extreme values.</td>
+        </tr>
+        <tr>
+          <td><strong>Median</strong></td>
+          <td>Middle value in an ordered dataset</td>
+          <td>Skewed data or data with outliers (income, housing prices). Commonly used in biostatistics instead of the mean.</td>
+          <td>Ignores the magnitude of most values. When the data is skewed, the median provides a better representation of the typical value.</td>
+        </tr>
+        <tr>
+          <td><strong>Mode</strong></td>
+          <td>Most frequent value(s)</td>
+          <td>Categorical data; finding peaks in bimodal distributions; Good to check for multimodality</td>
+          <td>Multimodal distributions are common in biology. Requires careful interpretation and mixture models for analysis.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>The Outlier Effect</h3>
+    <p>The dot plot below shows the annual income (in thousands) of 10 people from an online survey. <strong>Add Outlier</strong> to see what happens when a single billionaire walks in. Notice how the <span class="text-accent">mean</span> lurches while the <span class="text-green">median</span> barely budges.</p>
+
+    <div class="figure-container">
+      <div class="fig-title">Figure 1 — Mean vs. Median: Sensitivity to Outliers</div>
+      <canvas id="outlierCanvas" width="820" height="230"></canvas>
+      <div class="controls">
+        <button class="run-btn" id="outlier-add-btn">Add Billionaire ($4 800 000)</button>
+        <button class="run-btn secondary" id="outlier-reset-btn">Reset</button>
+      </div>
+      <div class="stat-readout" id="outlier-stats"></div>
+    </div>
+
+    <div class="callout intuition">
+      <div class="callout-label">💡 Key Insight</div>
+      When data is skewed or contains outliers — income, house prices, response times — always report the <strong>median</strong> as your primary measure of centre. The mean is only trustworthy when the distribution is roughly symmetric.
+    </div>
+  </section>
+
+  <!-- ====== SECTION 3 ====== -->
+  <section id="variability">
+    <h2><span class="section-num">3</span> Measures of Variability</h2>
+
+    <p>Knowing where the centre is only tells half the story. Two datasets can have identical means but look completely different if their spread differs. Variability measures tell us how <em>reliable</em> the centre actually is.</p>
+
+    <table class="comparison-table">
+      <thead><tr><th>Measure</th><th>Formula</th><th>Strength</th><th>Weakness</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Range</strong></td>
+          <td>\( x_{\max} - x_{\min} \)</td>
+          <td>Simple and intuitive</td>
+          <td>Entirely determined by the two most extreme values</td>
+        </tr>
+        <tr>
+          <td><strong>IQR</strong></td>
+          <td>\( Q_3 - Q_1 \)</td>
+          <td>Robust to outliers; covers middle 50%</td>
+          <td>Ignores the top and bottom 25% of data entirely</td>
+        </tr>
+        <tr>
+          <td><strong>Variance</strong></td>
+          <td>\( s^2 = \frac{\sum(x_i - \bar{x})^2}{n-1} \)</td>
+          <td>Uses every value; mathematically convenient</td>
+          <td>Units are squared (e.g., kg², not kg)</td>
+        </tr>
+        <tr>
+          <td><strong>Std Dev</strong> </td>
+          <td>\( s = \sqrt{s^2} \)</td>
+          <td>Back in original units; most interpretable</td>
+          <td>Still sensitive to extreme outliers</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <div class="callout-label">📌 Standard Deviation vs. Variance</div>
+      Variance squares the deviations to avoid positives and negatives cancelling out — but that leaves us with <em>units²</em>. Standard deviation commonly used for reporting results, variance is more common in statistics, machine learning and theoretical work because it has nicer mathematical properties.
+    </div>
+
+    <div class="callout warning">
+      <div class="callout-label">⚠ Don't Mix and Match</div>
+      Mean with SD, both describe symmetric well-behaved data ; Median with IQR, both are robust to outliers. Do not mix-and-match (e.g., median + SD) without a good reason.
+    </div>
+  </section>
+
+  <!-- ====== SECTION 4 ====== -->
+  <section id="distribution-shape">
+    <h2><span class="section-num">4</span> Shape of a Distribution</h2>
+
+    <p>Plotting data as a histogram links the centre and the spread together, revealing the overall <em>shape</em> of the distribution. Two useful numerical summaries of shape are <strong>skewness</strong> and <strong>kurtosis</strong>. They help describe how far a dataset departs from the bell-shaped pattern expected under normality.</p>
+
+    <h3>The Normal Distribution</h3>
+    <p>The <strong>normal distribution</strong> — the bell curve — is the most important distribution in statistics. It is completely described by two numbers: its mean \( \mu \) (the centre) and its standard deviation \( \sigma \) (the spread), written \( X \sim \mathcal{N}(\mu,\, \sigma^2) \). Its probability density function is:</p>
+
+    <div class="math-block">
+      $$ f(x) = \frac{1}{\sigma\sqrt{2\pi}}\, \exp\!\left(-\frac{1}{2}\left(\frac{x-\mu}{\sigma}\right)^{\!2}\right) $$
+    </div>
+
+    <p>Three properties make it stand out:</p>
+    <ul style="margin: 0 0 16px 24px; line-height: 2.1;">
+      <li><strong>Symmetry</strong> — perfectly balanced around \( \mu \), so mean = median = mode.</li>
+      <li><strong>Asymptotic tails</strong> — the curve never touches zero; it extends infinitely in both directions.</li>
+      <li><strong>The Empirical Rule</strong> — a fixed percentage of the distribution always falls within each standard-deviation band.</li>
+    </ul>
+
+    <h3>The normal distribution 68-95-99.7 rule </h3>
+    <div class="step-flow">
+      <div class="step">
+        <div class="step-num">68%</div>
+        <div class="step-title">Within μ ± 1σ</div>
+        <div class="step-desc">About two-thirds of observations. The width of one standard deviation on each side of the mean.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">95%</div>
+        <div class="step-title">Within μ ± 2σ</div>
+        <div class="step-desc">The basis for a 95% confidence interval. Common in scientific standards for significance levels.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">99.7%</div>
+        <div class="step-title">Within μ ± 3σ</div>
+        <div class="step-desc">Nearly all data. An observation beyond ±3σ is highly significant.</div>
+      </div>
+    </div>
+
+    <h3>The Normal Distribution</h3>
+    <p>Adjust \( \mu \) (centre) and \( \sigma \) (spread) with the sliders. The shaded bands illustrate the 68–95–99.7 empirical rule — the percentages stay fixed while the curve moves and stretches along a fixed x-axis.</p>
+
+    <div class="figure-container">
+      <div class="fig-title">Figure — Normal Distribution Explorer</div>
+      <canvas id="normalDistCanvas" width="820" height="270"></canvas>
+      <div class="controls">
+        <div class="control-group">
+          <label>Mean ( μ )</label>
+          <input type="range" id="nd_mu" min="-3" max="3" step="0.1" value="0">
+          <span class="val" id="nd_mu_val">0.0</span>
+        </div>
+        <div class="control-group">
+          <label>Std Dev ( σ )</label>
+          <input type="range" id="nd_sigma" min="0.3" max="2.5" step="0.1" value="1">
+          <span class="val" id="nd_sigma_val">1.0</span>
+        </div>
+      </div>
+      <div class="stat-readout" id="nd-stats"></div>
+    </div>
+
+    <div class="callout intuition">
+      <div class="callout-label">💡 The normality assumption </div>
+      The Central Limit Theorem: whenever a measurement is the sum of many small and independent samples. The result tends toward a normal distribution, even if none of the individual influences are normal themselves.This allows us to apply normal distribution statistics to almost any dataset.
+    </div>
+
+    <h3>Skewness: direction of the tail</h3>
+    <p><strong>Skewness</strong> measures asymmetry. It asks whether one tail of the distribution stretches farther than the other. A perfectly symmetric normal distribution has skewness close to \(0\).</p>
+
+    <div class="step-flow">
+      <div class="step">
+        <div class="step-num">0</div>
+        <div class="step-title">Zero Skewness</div>
+        <div class="step-desc">The distribution is roughly symmetric. For a normal distribution, mean, median, and mode line up near the centre.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">+</div>
+        <div class="step-title">Positive Skewness</div>
+        <div class="step-desc">The right tail is longer. The mean is pulled above the median. Common in income, recovery time, and reaction-time data.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">−</div>
+        <div class="step-title">Negative Skewness</div>
+        <div class="step-desc">The left tail is longer. The mean is pulled below the median. This can occur with ceiling effects, such as very high scores on a easy homework assignment.</div>
+      </div>
+    </div>
+
+    <div class="figure-container">
+      <div class="fig-title">Skewness and the Mean-Median Relationship</div>
+      <img src="../assets/images/week1/Relationship_between_mean_and_median_under_different_skewness.png" alt="Comparison of negative, zero, and positive skewness showing how mean, median, and mode shift relative to one another.">
+    </div>
+
+    <div class="callout intuition">
+      <div class="callout-label">Quick Rule</div>
+      The mean is pulled toward the tail. If the tail goes right, the mean tends to sit right of the median. If the tail goes left, the mean tends to sit left of the median.
+    </div>
+
+    <h3>Kurtosis: tail weight and peakedness</h3>
+    <p><strong>Kurtosis</strong> describes how much probability is concentrated in the tails and peak of a distribution. In practice, software often reports <strong>excess kurtosis</strong>, which subtracts 3 from regular kurtosis so that a normal distribution has excess kurtosis \(0\).</p>
+
+    <div class="math-block">
+      <p>\( \text{excess kurtosis} = \text{kurtosis} - 3 \)</p>
+    </div>
+
+    <div class="step-flow">
+      <div class="step">
+        <div class="step-num">0</div>
+        <div class="step-title">Normal-Like Tails</div>
+        <div class="step-desc">Excess kurtosis near 0 suggests tail weight similar to a normal distribution.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">+</div>
+        <div class="step-title">Positive Excess Kurtosis</div>
+        <div class="step-desc">Heavier tails and often a sharper peak. Extreme values are more common than a normal model would predict.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">−</div>
+        <div class="step-title">Negative Excess Kurtosis</div>
+        <div class="step-desc">Lighter tails and often a flatter top. Values are more evenly spread with fewer extreme observations.</div>
+      </div>
+    </div>
+
+    <div class="figure-container">
+      <div class="fig-title">Excess Kurtosis</div>
+      <img src="../assets/images/week1/Kurtosis.jpg" alt="Comparison of distributions with different excess kurtosis values, showing lighter and heavier tails.">
+    </div>
+
+    <h3>Using Shape to Check Normality</h3>
+    <p>A normal distribution should have <strong>skewness near \(0\)</strong> and <strong>excess kurtosis near \(0\)</strong>. Large positive or negative values warn that the data may violate the normality assumption used by many parametric tests.</p>
+
+    <table class="comparison-table">
+      <thead><tr><th>Check</th><th>Normal-Like Pattern</th><th>Warning Sign</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Histogram</strong></td>
+          <td>Single, roughly symmetric mound</td>
+          <td>Strong skew, multiple peaks, gaps, or extreme outliers</td>
+        </tr>
+        <tr>
+          <td><strong>Skewness</strong></td>
+          <td>Close to \(0\). We use \(|Skewness| < 1 \) for a rough guideline.</td>
+          <td>Large positive or negative value indicates asymmetry</td>
+        </tr>
+        <tr>
+          <td><strong>Excess Kurtosis</strong></td>
+          <td>Close to \(0\). We use \(|ExcessKurtosis| < 1 \) for a rough guideline.</td>
+          <td>Positive values suggest heavy tails; negative values suggest light tails or flatness</td>
+        </tr>
+        <tr>
+          <td><strong>Q-Q Plot</strong></td>
+          <td>Points fall close to a straight line</td>
+          <td>Curving ends, S-shapes, or outlying points suggest non-normality</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout warning">
+      <div class="callout-label">Practical Note</div>
+      Skewness and kurtosis are screening tools, not final verdicts. As a rough classroom rule, values between about \(-1\) and \(+1\) are often considered acceptable for many introductory analyses, but always inspect the graph and consider sample size. With large samples, tiny departures can look statistically significant; with small samples, severe non-normality can be hard to detect.
+    </div>
+
+    <p>In the CLT Simulator (Section 6), you can switch between Normal, Uniform, Right-Skewed, and Bimodal population distributions and see how the shape affects the sampling distribution of the mean.</p>
+  </section>
+
+  <!-- ====== SECTION 5 ====== -->
+  <section id="pop-vs-sample">
+    <h2><span class="section-num">5</span> Population vs. Sample</h2>
+
+    <p>This is arguably the most critical transition in introductory statistics — the shift from <strong>descriptive</strong> (summarising what we see) to <strong>inferential</strong> (estimating what we cannot see).</p>
+
+    <p><strong>The Population</strong> is the entire group you want to draw conclusions about. Its characteristics are called <em>parameters</em>. Parameters are fixed, true constants — but usually unknowable because we cannot measure everyone.</p>
+
+    <p><strong>The Sample</strong> is a representative subset that you actually collect. Its characteristics are called <em>statistics</em>. Statistics are known, but variable — take a new sample tomorrow and the numbers will shift slightly.</p>
+
+    <h3>The Notation</h3>
+    <table class="comparison-table">
+      <thead><tr><th>Metric</th><th>Population Parameter (Greek)</th><th>Sample Statistic (Roman)</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Size</strong></td><td>\( N \)</td><td>\( n \)</td></tr>
+        <tr><td><strong>Mean</strong></td><td>\( \mu \) (mu)</td><td>\( \bar{x} \) (x-bar)</td></tr>
+        <tr><td><strong>Standard Deviation</strong></td><td>\( \sigma \) (sigma)</td><td>\( s \)</td></tr>
+        <tr><td><strong>Variance</strong></td><td>\( \sigma^2 \)</td><td>\( s^2 \)</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <div class="callout-label">📌 The Core Problem of Inference</div>
+      We collect a sample and compute \( \bar{x} \). But \( \bar{x} \) is an <em>estimate</em> of the true \( \mu \) — and because sampling involves randomness, a different sample would give a different \( \bar{x} \). The Central Limit Theorem tells us exactly how much our \( \bar{x} \) will bounce around from sample to sample.
+    </div>
+  </section>
+
+  <!-- ====== SECTION 6: CLT ====== -->
+  <section id="clt">
+    <h2><span class="section-num">6</span> The Central Limit Theorem</h2>
+
+    <p>Imagine at SFU student heights form a bizarre, bimodal distribution — two distinct clusters because of male and female students. If you pull <em>one</em> random student at a time, your observation will fall into one of the clusters. But now try this:</p>
+
+    <ol class="list-spaced">
+      <li>Take a random sample of <strong>30 students</strong> and record their average height \( \bar{x}_1 \).</li>
+      <li>(sample with replacement) Let them go back, take another 30, record \( \bar{x}_2 \).</li>
+      <li>Repeat 1,000 times.</li>
+    </ol>
+
+    <p>Plot those 1,000 averages. Something remarkable happens: <strong>the distribution becomes a smooth, symmetric bell curve</strong> — even though the original population form two distinct clusters.</p>
+
+    <h3>What the CLT Tells Us</h3>
+
+    <p>The Central Limit Theorem states that for a sufficiently large random sample (\( n \ge 30 \) as a rule of thumb), the <strong>sampling distribution of \( \bar{x} \)</strong> will have three properties — regardless of the population's shape:</p>
+
+    <div class="step-flow">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-title">Shape → Normal</div>
+        <div class="step-desc">The distribution of sample means is approximately normal, even if the population is wildly non-normal.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-title">Center → Population Mean</div>
+        <div class="step-desc">The mean of all sample means equals the true population mean: \( \mu_{\bar{x}} = \mu \).</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-title">Spread → Shrinks with n</div>
+        <div class="step-desc">The spread of sample means narrows as \( n \) increases. The formula is: \( \sigma_{\bar{x}} = \sigma / \sqrt{n} \).</div>
+      </div>
+    </div>
+
+    <div class="math-block">
+      $$ \bar{x} \sim \mathcal{N}\!\left(\mu,\ \frac{\sigma^2}{n}\right) \quad \text{for large } n $$
+    </div>
+
+    <div class="callout warning">
+      <div class="callout-label">What the CLT does not say</div>
+      The CLT describes how the <strong>sample mean</strong> \( \bar{x} \) is distributed across many repeated samples. It says nothing about individual data points — a single sample of size 30 will <em>not</em> suddenly look normal if the population is skewed.
+    </div>
+
+    <h3>CLT Simulator</h3>
+    <p>Choose a population distribution below — Normal, Uniform, Right-Skewed, or Bimodal. Then set the sample size \( n \) and click <strong>Draw 1 Time</strong> to see the individual observations appear on the population distribution, with their mean added to the growing histogram on the right. Watch the right panel converge to a bell curve as you collect more samples.</p>
+
+    <div class="figure-container">
+      <div class="fig-title">Figure 2 — Central Limit Theorem Simulator</div>
+      <div class="tab-row" id="clt-dist-tabs">
+        <button class="tab-btn active" data-dist="normal">Normal</button>
+        <button class="tab-btn" data-dist="uniform">Uniform</button>
+        <button class="tab-btn" data-dist="skewed">Right-Skewed</button>
+        <button class="tab-btn" data-dist="bimodal">Bimodal</button>
+      </div>
+      <canvas id="cltCanvas" width="820" height="400"></canvas>
+      <div class="controls">
+        <div class="control-group">
+          <label>Sample Size ( n )</label>
+          <input type="range" id="clt_n" min="1" max="50" step="1" value="10">
+          <span class="val" id="clt_n_val">10</span>
+        </div>
+        <button class="run-btn" id="clt-draw1-btn">Draw 1 Time</button>
+        <button class="run-btn" id="clt-draw50-btn">Draw 50 Times</button>
+        <button class="run-btn secondary" id="clt-reset-btn">Reset</button>
+      </div>
+      <div class="stat-readout" id="clt-stats"></div>
+    </div>
+
+    <div class="callout intuition">
+      <div class="callout-label">💡 Try it out</div>
+      Try n = 1 first — the sampling distribution mirrors the population exactly. Increase to n = 5, then n = 30. Notice how the right panel narrows and becomes bell-shaped regardless of which population you chose. The dashed grey curve shows the theoretical normal the CLT predicts.
+    </div>
+  </section>
+
+  <!-- ====== SECTION 7: SD vs SE ====== -->
+  <section id="sd-vs-se">
+    <h2><span class="section-num">7</span> Standard Deviation vs. Standard Error</h2>
+
+    <p>Students constantly conflate these two because both are called "standard deviations" — but they measure entirely different things.</p>
+
+    <table class="comparison-table">
+      <thead><tr><th></th><th>Standard Deviation (SD)</th><th>Standard Error (SE)</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Measures</strong></td>
+          <td>Variability of <em>individual data points</em> within a group</td>
+          <td>Precision of the <em>sample mean estimate</em></td>
+        </tr>
+        <tr>
+          <td><strong>Question answered</strong></td>
+          <td>"How much do individuals differ from each other?"</td>
+          <td>"How much will my sample mean bounce if I repeated the study?"</td>
+        </tr>
+        <tr>
+          <td><strong>Formula</strong></td>
+          <td>\( s = \sqrt{\frac{\sum(x_i-\bar{x})^2}{n-1}} \)</td>
+          <td>\( SE = \frac{s}{\sqrt{n}} \)</td>
+        </tr>
+        <tr>
+          <td><strong>Effect of larger n</strong></td>
+          <td>Stays roughly constant — more people doesn't make humans less diverse</td>
+          <td>Shrinks — more data gives a more stable, trustworthy mean estimate</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="math-block">
+      $$ SE = \frac{\sigma}{\sqrt{n}} $$
+    </div>
+
+    <h3>Watching SE Shrink</h3>
+    <p>Use the sliders to change the population standard deviation \( \sigma \) and sample size \( n \). The <span class="text-accent">blue</span> curve is the population distribution — it stays fixed as \( n \) changes. The <span class="text-green">green</span> curve is the <em>sampling distribution of the mean</em>, which narrows as \( n \) increases.</p>
+
+    <div class="figure-container">
+      <div class="fig-title">Figure 3 — SD vs. Standard Error</div>
+      <canvas id="sdseCanvas" width="820" height="260"></canvas>
+      <div class="controls">
+        <div class="control-group">
+          <label>Population SD ( σ )</label>
+          <input type="range" id="sdse_sd" min="0.5" max="4" step="0.1" value="2">
+          <span class="val" id="sdse_sd_val">2.0</span>
+        </div>
+        <div class="control-group">
+          <label>Sample Size ( n )</label>
+          <input type="range" id="sdse_n" min="1" max="100" step="1" value="10">
+          <span class="val" id="sdse_n_val">10</span>
+        </div>
+      </div>
+      <div class="stat-readout" id="sdse-stats"></div>
+    </div>
+
+    <details>
+    <summary>When you report your experimental results, should you report the standard deviation or the standard error?</summary>
+    <p> Because SE is always smaller than SD it might be attractive to report it, but this can be misleading. SD provides information about the spread of individual data points, while SE indicates the precision of the sample mean estimate.</p>
+    <p> If your data is highly variable, hiding that variability behind tiny SE bars is misleading. </p>
+    </details>
+  </section>
+
+  <!-- ====== SECTION 8: CLT FAILURES ====== -->
+  <section id="clt-failures">
+    <h2><span class="section-num">8</span> When CLT Fails</h2>
+
+    <p>The CLT most likely holds in many practical situations. However, there are certain conditions under which it may not apply.</p>
+
+    <div class="callout danger">
+      <div class="callout-label">Failure Conditions</div>
+      <ol class="list-spaced compact">
+        <li><strong>Finite Variance Required</strong> — Fails for heavy-tailed distributions (e.g., Cauchy) where extreme outliers occur frequently enough to overpower the averaging effect.</li>
+        <li><strong>Independence Required</strong> — Fails when observations are autocorrelated (e.g., time-series data). A large \( n \) isn't adding independent information.</li>
+        <li><strong>Extreme Values</strong> — Fails when one variable's variance explodes relative to the rest, dominating the sum and preventing stabilisation.</li>
+      </ol>
+    </div>
+
+    <h3>Failure Mode Explorer</h3>
+    <p>Each tab below shows 200 sample means drawn from a different failure-case distribution, compared side-by-side with the well-behaved Normal case. All use \( n = 30 \). The <span class="text-muted">dashed grey curve</span> is what the CLT predicts. See how the actual histogram deviates.</p>
+
+    <div class="figure-container">
+      <div class="fig-title">Figure 4 — CLT Failure Modes</div>
+      <div class="tab-row" id="fail-tabs">
+        <button class="tab-btn active" data-fail="cauchy">1. Cauchy Distribution</button>
+        <button class="tab-btn" data-fail="autocorr">2. Autocorrelated Data</button>
+        <button class="tab-btn" data-fail="exploding">3. Extreme Values</button>
+      </div>
+      <canvas id="failCanvas" width="820" height="340"></canvas>
+      <div class="controls">
+        <div id="fail-cauchy-controls" class="fail-ctrl">
+          <span class="fail-note">n = 30 samples from Cauchy(0, 1) vs Normal(0, 1)</span>
+        </div>
+        <div id="fail-autocorr-controls" class="fail-ctrl is-hidden">
+          <div class="control-group">
+            <label>Autocorrelation ( φ )</label>
+            <input type="range" id="fail_phi" min="0" max="0.95" step="0.05" value="0.9">
+            <span class="val" id="fail_phi_val">0.90</span>
+          </div>
+        </div>
+        <div id="fail-exploding-controls" class="fail-ctrl is-hidden">
+          <div class="control-group">
+            <label>Explosive Component SD</label>
+            <input type="range" id="fail_explsd" min="1" max="30" step="1" value="15">
+            <span class="val" id="fail_explsd_val">15</span>
+          </div>
+        </div>
+        <button class="run-btn" id="fail-resim-btn">Resimulate</button>
+      </div>
+      <div class="stat-readout" id="fail-stats"></div>
+    </div>
+
+    <div class="callout warning">
+      <div class="callout-label">Practical Implication</div>
+      In biomechanics and kinesiology, autocorrelation is common in time-series data such as EMG, EEG, fMRI etc. Treating correlated measurements as independent inflates your effective sample size — and makes your SE appear smaller than it really is. Always check for autocorrelation before applying standard inferential tests.
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>Inquiry and Measurement in Biomedical Physiology and Kinesiology</p>
+</footer>
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+<script>
+// ===== UTILITY FUNCTIONS =====
+function gaussianPDF(x, mu, sigma) {
+  const z = (x - mu) / sigma;
+  return Math.exp(-0.5 * z * z) / (sigma * Math.sqrt(2 * Math.PI));
+}
+
+function randNormal(mu, sigma) {
+  let u, v;
+  do { u = Math.random(); } while (u <= 0);
+  v = Math.random();
+  return mu + sigma * Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+
+function randUniform(a, b) { return a + Math.random() * (b - a); }
+
+function randCauchy(x0, gamma) {
+  return x0 + gamma * Math.tan(Math.PI * (Math.random() - 0.5));
+}
+
+// AR(1) time series, returns array of length n
+function generateAR1(n, phi, sigma) {
+  const initSD = sigma / Math.sqrt(1 - phi * phi);
+  const series = [randNormal(0, initSD)];
+  for (let i = 1; i < n; i++) {
+    series.push(phi * series[i - 1] + randNormal(0, sigma));
+  }
+  return series;
+}
+
+const dpr = window.devicePixelRatio || 1;
+function setupCanvas(canvas) {
+  const w = canvas.getAttribute('width') | 0;
+  const h = canvas.getAttribute('height') | 0;
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  return ctx;
+}
+
+
+// ===== FIGURE 1: OUTLIER EFFECT =====
+(function () {
+  const canvas = document.getElementById('outlierCanvas');
+  const ctx = setupCanvas(canvas);
+  const W = 820, H = 230;
+
+  const BASE_DATA = [22, 25, 28, 30, 32, 35, 38, 40, 44, 48];
+  let data = [...BASE_DATA];
+  let hasBillionaire = false;
+
+  function stats(arr) {
+    const n = arr.length;
+    const sorted = [...arr].sort((a, b) => a - b);
+    const mean = arr.reduce((a, b) => a + b, 0) / n;
+    const median = n % 2 === 0
+      ? (sorted[n / 2 - 1] + sorted[n / 2]) / 2
+      : sorted[(n - 1) / 2];
+    return { mean, median };
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const { mean, median } = stats(data);
+
+    const padL = 60, padR = 40, padT = 40, padB = 60;
+    const plotW = W - padL - padR;
+    const plotH = H - padT - padB;
+
+    const xMin = 0;
+    const xMax = hasBillionaire ? 5200 : 60;
+    function valToX(v) { return padL + (v - xMin) / (xMax - xMin) * plotW; }
+
+    // Axis
+    ctx.strokeStyle = '#ccc';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(padL, padT + plotH * 0.5);
+    ctx.lineTo(W - padR, padT + plotH * 0.5);
+    ctx.stroke();
+
+    // X-axis ticks
+    ctx.fillStyle = '#888';
+    ctx.font = '12px "Source Sans 3", sans-serif';
+    ctx.textAlign = 'center';
+    const tickCount = 6;
+    for (let i = 0; i <= tickCount; i++) {
+      const v = xMin + (xMax - xMin) * i / tickCount;
+      const xS = valToX(v);
+      ctx.beginPath();
+      ctx.moveTo(xS, padT + plotH * 0.5);
+      ctx.lineTo(xS, padT + plotH * 0.5 + 5);
+      ctx.stroke();
+      const label = v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v.toFixed(0);
+      ctx.fillText('$' + label, xS, padT + plotH * 0.5 + 20);
+    }
+    ctx.fillText('Annual Income (CAD thousands)', padL + plotW / 2, H - 5);
+
+    // Dots
+    const dotY = padT + plotH * 0.5;
+    data.forEach((v, i) => {
+      const xS = valToX(v);
+      const isBill = hasBillionaire && i === data.length - 1;
+      ctx.fillStyle = isBill ? '#ea580c' : '#93c5fd';
+      ctx.strokeStyle = isBill ? '#c2410c' : '#2563eb';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(xS, dotY, isBill ? 8 : 6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+    });
+
+    // Median label on top row, mean label on row below — prevents overlap when values are close
+    const meanX = valToX(mean);
+    const medX  = valToX(median);
+    const meanLabel = mean   >= 1000 ? '$' + (mean   / 1000).toFixed(1) + 'M' : '$' + mean.toFixed(0)   + 'k';
+    const medLabel  = median >= 1000 ? '$' + (median / 1000).toFixed(1) + 'M' : '$' + median.toFixed(0) + 'k';
+
+    // Median line — starts from row 1 label baseline
+    ctx.strokeStyle = '#059669';
+    ctx.lineWidth = 2.5;
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.moveTo(medX, padT + 8);
+    ctx.lineTo(medX, padT + plotH * 0.5 + 6);
+    ctx.stroke();
+
+    ctx.fillStyle = '#059669';
+    ctx.font = '700 13px "Source Sans 3", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Median ' + medLabel, medX, padT + 4);
+
+    // Mean line — starts from row 2 label baseline
+    ctx.strokeStyle = '#2563eb';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(meanX, padT + 24);
+    ctx.lineTo(meanX, padT + plotH * 0.5 + 6);
+    ctx.stroke();
+
+    ctx.fillStyle = '#2563eb';
+    ctx.font = '700 13px "Source Sans 3", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Mean ' + meanLabel, meanX, padT + 20);
+
+    // Readout
+    const fmtK = v => v >= 1000 ? '$' + (v / 1000).toFixed(1) + 'M' : '$' + v.toFixed(1) + 'k';
+    document.getElementById('outlier-stats').innerHTML =
+      '<span class="stat">Mean = <strong>' + fmtK(mean) + '</strong></span>' +
+      '<span class="stat">Median = <strong>' + fmtK(median) + '</strong></span>' +
+      '<span class="stat">n = <strong>' + data.length + '</strong></span>' +
+      (hasBillionaire ? '<span class="stat is-danger">Mean shifted by <strong>' + fmtK(mean - stats(BASE_DATA).mean) + '</strong> ↑ · Median shifted by <strong>' + fmtK(median - stats(BASE_DATA).median) + '</strong></span>' : '');
+  }
+
+  document.getElementById('outlier-add-btn').addEventListener('click', () => {
+    if (!hasBillionaire) { data = [...BASE_DATA, 4800]; hasBillionaire = true; }
+    draw();
+  });
+  document.getElementById('outlier-reset-btn').addEventListener('click', () => {
+    data = [...BASE_DATA]; hasBillionaire = false; draw();
+  });
+  draw();
+})();
+
+
+// ===== FIGURE 2: CLT SIMULATOR =====
+(function () {
+  const canvas = document.getElementById('cltCanvas');
+  const ctx = setupCanvas(canvas);
+  const W = 820, H = 400;
+
+  // Distribution definitions: all centred near 5, xRange for population panel
+  const DISTS = {
+    normal: {
+      mu: 5, sigma: 1.5, xMin: 0, xMax: 10,
+      pdf: x => gaussianPDF(x, 5, 1.5),
+      sample: () => randNormal(5, 1.5)
+    },
+    uniform: {
+      mu: 5, sigma: 2.887, xMin: 0, xMax: 10,
+      pdf: x => (x >= 0 && x <= 10) ? 0.1 : 0,
+      sample: () => randUniform(0, 10)
+    },
+    skewed: {
+      mu: 5, sigma: 2, xMin: 3, xMax: 15,
+      pdf: x => x >= 3 ? 0.5 * Math.exp(-0.5 * (x - 3)) : 0,
+      sample: () => { let u; do { u = Math.random(); } while (u <= 0); return 3 + (-2 * Math.log(u)); }
+    },
+    bimodal: {
+      mu: 5, sigma: 2.15, xMin: 0, xMax: 10,
+      pdf: x => 0.5 * gaussianPDF(x, 3, 0.8) + 0.5 * gaussianPDF(x, 7, 0.8),
+      sample: () => Math.random() < 0.5 ? randNormal(3, 0.8) : randNormal(7, 0.8)
+    }
+  };
+
+  let distType = 'normal';
+  let sampleMeans = [];
+  let currentDots = [];
+  let currentMean = null;
+  let showDots = false;
+  let dotTimer = null;
+
+  // Sampling distribution fixed x range [1, 9]
+  const SAMP_MIN = 1, SAMP_MAX = 9, NUM_BINS = 40;
+  const BIN_W = (SAMP_MAX - SAMP_MIN) / NUM_BINS;
+  let histBins = new Array(NUM_BINS).fill(0);
+
+  // Panel bounds
+  const LP = { l: 40, r: 383, t: 50, b: 340 };
+  const RP = { l: 437, r: 800, t: 50, b: 340 };
+
+  function getDist() { return DISTS[distType]; }
+  function getN() { return parseInt(document.getElementById('clt_n').value); }
+
+  function addToHist(mean) {
+    const bin = Math.max(0, Math.min(NUM_BINS - 1, Math.floor((mean - SAMP_MIN) / BIN_W)));
+    histBins[bin]++;
+  }
+
+  function resetSim() {
+    sampleMeans = [];
+    histBins = new Array(NUM_BINS).fill(0);
+    currentDots = [];
+    currentMean = null;
+    showDots = false;
+    if (dotTimer) { clearTimeout(dotTimer); dotTimer = null; }
+    updateStats();
+    render();
+  }
+
+  function updateStats() {
+    const d = getDist();
+    const n = getN();
+    const se = d.sigma / Math.sqrt(n);
+    const k = sampleMeans.length;
+    let html = '<span class="stat">n = <strong>' + n + '</strong></span>' +
+      '<span class="stat">Population σ = <strong>' + d.sigma.toFixed(2) + '</strong></span>' +
+      '<span class="stat">Expected SE = <strong>' + se.toFixed(3) + '</strong></span>' +
+      '<span class="stat">Samples drawn = <strong>' + k + '</strong></span>';
+    if (k >= 5) {
+      const obsMean = sampleMeans.reduce((a, b) => a + b, 0) / k;
+      const obsSE = Math.sqrt(sampleMeans.map(m => (m - obsMean) ** 2).reduce((a, b) => a + b, 0) / (k - 1));
+      html += '<span class="stat">Observed SD(x̄) = <strong>' + obsSE.toFixed(3) + '</strong></span>';
+    }
+    document.getElementById('clt-stats').innerHTML = html;
+  }
+
+  function drawPopPanel() {
+    const d = getDist();
+    const pw = LP.r - LP.l, ph = LP.b - LP.t;
+
+    function valToX(v) { return LP.l + (v - d.xMin) / (d.xMax - d.xMin) * pw; }
+
+    // Max pdf
+    let maxPdf = 0;
+    for (let x = d.xMin; x <= d.xMax; x += (d.xMax - d.xMin) / 300)
+      maxPdf = Math.max(maxPdf, d.pdf(x));
+    maxPdf = Math.max(maxPdf * 1.15, 0.001);
+    function pdfToY(p) { return LP.b - (p / maxPdf) * ph; }
+
+    // Fill
+    ctx.fillStyle = 'rgba(37,99,235,0.12)';
+    ctx.beginPath();
+    ctx.moveTo(valToX(d.xMin), LP.b);
+    for (let x = d.xMin; x <= d.xMax; x += (d.xMax - d.xMin) / 300)
+      ctx.lineTo(valToX(x), pdfToY(d.pdf(x)));
+    ctx.lineTo(valToX(d.xMax), LP.b);
+    ctx.fill();
+
+    // Curve
+    ctx.strokeStyle = '#2563eb';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    let first = true;
+    for (let x = d.xMin; x <= d.xMax; x += (d.xMax - d.xMin) / 300) {
+      first ? ctx.moveTo(valToX(x), pdfToY(d.pdf(x))) : ctx.lineTo(valToX(x), pdfToY(d.pdf(x)));
+      first = false;
+    }
+    ctx.stroke();
+
+    // Population mean dashed line
+    ctx.strokeStyle = '#94a3b8';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 3]);
+    const muX = valToX(d.mu);
+    ctx.beginPath(); ctx.moveTo(muX, LP.b); ctx.lineTo(muX, LP.t + 10); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '600 11px "Source Sans 3",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('μ = ' + d.mu, muX, LP.t + 6);
+
+    // Sample dots
+    if (showDots && currentDots.length > 0) {
+      ctx.fillStyle = '#ea580c';
+      currentDots.forEach(v => {
+        const xd = valToX(Math.max(d.xMin, Math.min(d.xMax, v)));
+        ctx.beginPath();
+        ctx.arc(xd, LP.b - 8, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      // Sample mean marker
+      if (currentMean !== null) {
+        const mx = valToX(Math.max(d.xMin, Math.min(d.xMax, currentMean)));
+        ctx.strokeStyle = '#dc2626';
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(mx, LP.b - 18); ctx.lineTo(mx, LP.t + 10); ctx.stroke();
+        ctx.fillStyle = '#dc2626';
+        ctx.font = '700 11px "Source Sans 3",sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('x̄ = ' + currentMean.toFixed(2), mx, LP.t + 6);
+      }
+    }
+
+    // Axis
+    ctx.strokeStyle = '#bbb'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(LP.l, LP.b); ctx.lineTo(LP.r, LP.b); ctx.stroke();
+    ctx.fillStyle = '#777'; ctx.font = '11px "Source Sans 3",sans-serif'; ctx.textAlign = 'center';
+    const step = (d.xMax - d.xMin) <= 12 ? 2 : 3;
+    for (let x = Math.ceil(d.xMin / step) * step; x <= d.xMax; x += step) {
+      const xS = valToX(x);
+      ctx.beginPath(); ctx.moveTo(xS, LP.b); ctx.lineTo(xS, LP.b + 4); ctx.stroke();
+      ctx.fillText(x, xS, LP.b + 16);
+    }
+
+    // Panel label
+    ctx.fillStyle = '#2563eb';
+    ctx.font = '700 12px "Source Sans 3",sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('Population Distribution', LP.l, LP.t - 12);
+    if (showDots && currentDots.length > 0) {
+      ctx.fillStyle = '#ea580c';
+      ctx.font = '600 11px "Source Sans 3",sans-serif';
+      ctx.fillText('● Current sample (n = ' + currentDots.length + ')', LP.l, LP.b + 32);
+    }
+  }
+
+  function drawSampPanel() {
+    const d = getDist();
+    const n = getN();
+    const se = d.sigma / Math.sqrt(n);
+    const pw = RP.r - RP.l, ph = RP.b - RP.t;
+
+    function sampToX(v) { return RP.l + (v - SAMP_MIN) / (SAMP_MAX - SAMP_MIN) * pw; }
+
+    // Theoretical normal overlay height anchor
+    const maxTheoryPdf = gaussianPDF(d.mu, d.mu, se);
+
+    if (sampleMeans.length === 0) {
+      ctx.fillStyle = '#bbb';
+      ctx.font = '14px "Source Sans 3",sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Draw samples to build the', (RP.l + RP.r) / 2, (RP.t + RP.b) / 2 - 8);
+      ctx.fillText('sampling distribution →', (RP.l + RP.r) / 2, (RP.t + RP.b) / 2 + 12);
+    } else {
+      const total = sampleMeans.length;
+      const maxBinDensity = Math.max(...histBins.map(c => c / (total * BIN_W)), 0.001);
+      const refDensity = total >= 20 ? Math.max(maxTheoryPdf * 1.15, maxBinDensity) : maxBinDensity * 1.15;
+      const yScale = ph / refDensity;
+
+      // Histogram bars
+      ctx.fillStyle = 'rgba(5,150,105,0.3)';
+      ctx.strokeStyle = 'rgba(5,150,105,0.7)';
+      ctx.lineWidth = 0.5;
+      for (let b = 0; b < NUM_BINS; b++) {
+        if (histBins[b] === 0) continue;
+        const density = histBins[b] / (total * BIN_W);
+        const bh = density * yScale;
+        const bx = sampToX(SAMP_MIN + b * BIN_W);
+        const bxEnd = sampToX(SAMP_MIN + (b + 1) * BIN_W);
+        ctx.fillRect(bx, RP.b - bh, bxEnd - bx, bh);
+        ctx.strokeRect(bx, RP.b - bh, bxEnd - bx, bh);
+      }
+
+      // Theoretical normal overlay (show after 20 samples)
+      if (total >= 20) {
+        ctx.strokeStyle = 'rgba(100,116,139,0.65)';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 4]);
+        ctx.beginPath();
+        let first = true;
+        for (let v = SAMP_MIN; v <= SAMP_MAX; v += (SAMP_MAX - SAMP_MIN) / 300) {
+          const pdf = gaussianPDF(v, d.mu, se);
+          const yS = RP.b - pdf * yScale;
+          first ? ctx.moveTo(sampToX(v), yS) : ctx.lineTo(sampToX(v), yS);
+          first = false;
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // Current mean marker
+      if (showDots && currentMean !== null) {
+        const mx = sampToX(Math.max(SAMP_MIN, Math.min(SAMP_MAX, currentMean)));
+        ctx.strokeStyle = '#dc2626';
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(mx, RP.b); ctx.lineTo(mx, RP.t); ctx.stroke();
+      }
+    }
+
+    // Axis
+    ctx.strokeStyle = '#bbb'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(RP.l, RP.b); ctx.lineTo(RP.r, RP.b); ctx.stroke();
+    ctx.fillStyle = '#777'; ctx.font = '11px "Source Sans 3",sans-serif'; ctx.textAlign = 'center';
+    for (let v = 2; v <= 8; v++) {
+      const xS = sampToX(v);
+      ctx.beginPath(); ctx.moveTo(xS, RP.b); ctx.lineTo(xS, RP.b + 4); ctx.stroke();
+      ctx.fillText(v, xS, RP.b + 16);
+    }
+
+    // Panel label
+    ctx.fillStyle = '#059669';
+    ctx.font = '700 12px "Source Sans 3",sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('Sampling Distribution of x̄', RP.l, RP.t - 12);
+
+    ctx.fillStyle = '#64748b';
+    ctx.font = '11px "Source Sans 3",sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('n = ' + n + '   SE = ' + se.toFixed(3), RP.r, RP.t - 12);
+
+    if (sampleMeans.length >= 20) {
+      ctx.setLineDash([5, 4]);
+      ctx.strokeStyle = 'rgba(100,116,139,0.65)';
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(RP.r - 140, RP.t + 14); ctx.lineTo(RP.r - 110, RP.t + 14); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#64748b';
+      ctx.font = '11px "Source Sans 3",sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('N(μ, σ/√n) predicted', RP.r - 106, RP.t + 18);
+    }
+  }
+
+  function render() {
+    ctx.clearRect(0, 0, W, H);
+    ctx.strokeStyle = '#e5e5e5'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(410, LP.t - 20); ctx.lineTo(410, LP.b + 40); ctx.stroke();
+    drawPopPanel();
+    drawSampPanel();
+    ctx.fillStyle = '#aaa'; ctx.font = '11px "Source Sans 3",sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('Individual sample value', (LP.l + LP.r) / 2, LP.b + 32);
+    ctx.fillText('Sample mean (x̄)', (RP.l + RP.r) / 2, RP.b + 32);
+  }
+
+  function drawOneSample() {
+    const d = getDist();
+    const n = getN();
+    currentDots = Array.from({ length: n }, () => d.sample());
+    currentMean = currentDots.reduce((a, b) => a + b, 0) / n;
+    sampleMeans.push(currentMean);
+    addToHist(currentMean);
+    showDots = true;
+    updateStats();
+    render();
+    if (dotTimer) clearTimeout(dotTimer);
+    dotTimer = setTimeout(() => { showDots = false; render(); }, 1500);
+  }
+
+  function draw50() {
+    const d = getDist();
+    const n = getN();
+    for (let s = 0; s < 50; s++) {
+      const dots = Array.from({ length: n }, () => d.sample());
+      const mean = dots.reduce((a, b) => a + b, 0) / n;
+      sampleMeans.push(mean);
+      addToHist(mean);
+    }
+    showDots = false;
+    updateStats();
+    render();
+  }
+
+  // Distribution tab switching
+  document.getElementById('clt-dist-tabs').querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById('clt-dist-tabs').querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      distType = btn.dataset.dist;
+      resetSim();
+    });
+  });
+
+  document.getElementById('clt_n').addEventListener('input', () => {
+    document.getElementById('clt_n_val').textContent = document.getElementById('clt_n').value;
+    resetSim();
+  });
+
+  document.getElementById('clt-draw1-btn').addEventListener('click', drawOneSample);
+  document.getElementById('clt-draw50-btn').addEventListener('click', draw50);
+  document.getElementById('clt-reset-btn').addEventListener('click', resetSim);
+
+  resetSim();
+})();
+
+
+// ===== FIGURE 3: SD vs SE =====
+(function () {
+  const canvas = document.getElementById('sdseCanvas');
+  const ctx = setupCanvas(canvas);
+  const W = 820, H = 260;
+
+  function draw() {
+    const sd = parseFloat(document.getElementById('sdse_sd').value);
+    const n = parseInt(document.getElementById('sdse_n').value);
+    const se = sd / Math.sqrt(n);
+    const mu = 5;
+
+    document.getElementById('sdse_sd_val').textContent = sd.toFixed(1);
+    document.getElementById('sdse_n_val').textContent = n;
+
+    ctx.clearRect(0, 0, W, H);
+    const padL = 60, padR = 40, padT = 40, padB = 50;
+    const plotW = W - padL - padR;
+    const plotH = H - padT - padB;
+
+    const xMin = 0, xMax = 10;
+    function valToX(v) { return padL + (v - xMin) / (xMax - xMin) * plotW; }
+
+    // Height scaling: anchor so the taller of the two curves fills ~80% of plotH
+    const maxSdPdf = gaussianPDF(mu, mu, sd);
+    const maxSePdf = gaussianPDF(mu, mu, se);
+    const maxPdf = Math.max(maxSdPdf, maxSePdf) * 1.2;
+    function pdfToY(p) { return padT + plotH - (p / maxPdf) * plotH; }
+
+    // Draw population distribution (SD) — blue
+    ctx.fillStyle = 'rgba(37,99,235,0.1)';
+    ctx.beginPath();
+    ctx.moveTo(valToX(xMin), padT + plotH);
+    for (let x = xMin; x <= xMax; x += (xMax - xMin) / 400)
+      ctx.lineTo(valToX(x), pdfToY(gaussianPDF(x, mu, sd)));
+    ctx.lineTo(valToX(xMax), padT + plotH);
+    ctx.fill();
+
+    ctx.strokeStyle = '#2563eb';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    let first = true;
+    for (let x = xMin; x <= xMax; x += (xMax - xMin) / 400) {
+      first ? ctx.moveTo(valToX(x), pdfToY(gaussianPDF(x, mu, sd))) : ctx.lineTo(valToX(x), pdfToY(gaussianPDF(x, mu, sd)));
+      first = false;
+    }
+    ctx.stroke();
+
+    // Draw sampling distribution (SE) — green
+    ctx.fillStyle = 'rgba(5,150,105,0.15)';
+    ctx.beginPath();
+    ctx.moveTo(valToX(xMin), padT + plotH);
+    for (let x = xMin; x <= xMax; x += (xMax - xMin) / 400)
+      ctx.lineTo(valToX(x), pdfToY(gaussianPDF(x, mu, se)));
+    ctx.lineTo(valToX(xMax), padT + plotH);
+    ctx.fill();
+
+    ctx.strokeStyle = '#059669';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    first = true;
+    for (let x = xMin; x <= xMax; x += (xMax - xMin) / 400) {
+      first ? ctx.moveTo(valToX(x), pdfToY(gaussianPDF(x, mu, se))) : ctx.lineTo(valToX(x), pdfToY(gaussianPDF(x, mu, se)));
+      first = false;
+    }
+    ctx.stroke();
+
+    // Axis
+    ctx.strokeStyle = '#bbb'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(padL, padT + plotH); ctx.lineTo(W - padR, padT + plotH); ctx.stroke();
+    ctx.fillStyle = '#777'; ctx.font = '11px "Source Sans 3",sans-serif'; ctx.textAlign = 'center';
+    for (let x = 0; x <= 10; x += 2) {
+      const xS = valToX(x);
+      ctx.beginPath(); ctx.moveTo(xS, padT + plotH); ctx.lineTo(xS, padT + plotH + 4); ctx.stroke();
+      ctx.fillText(x, xS, padT + plotH + 17);
+    }
+
+    // Labels
+    ctx.fillStyle = '#2563eb';
+    ctx.font = '700 12px "Source Sans 3",sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('Population Distribution (σ = ' + sd.toFixed(1) + ')', padL + 10, padT + 20);
+    ctx.fillStyle = '#059669';
+    ctx.fillText('Sampling Distribution of x̄  (SE = σ/√n = ' + se.toFixed(3) + ')', padL + 10, padT + 38);
+
+    // Readout
+    document.getElementById('sdse-stats').innerHTML =
+      '<span class="stat">σ (population SD) = <strong>' + sd.toFixed(2) + '</strong></span>' +
+      '<span class="stat">n = <strong>' + n + '</strong></span>' +
+      '<span class="stat">SE = σ/√n = <strong>' + se.toFixed(4) + '</strong></span>' +
+      '<span class="stat">SE is <strong>' + (sd / se).toFixed(1) + '×</strong> narrower than σ</span>';
+  }
+
+  ['sdse_sd', 'sdse_n'].forEach(id => document.getElementById(id).addEventListener('input', draw));
+  draw();
+})();
+
+
+// ===== FIGURE 4: CLT FAILURE MODES =====
+(function () {
+  const canvas = document.getElementById('failCanvas');
+  const ctx = setupCanvas(canvas);
+  const W = 820, H = 340;
+
+  let activeTab = 'cauchy';
+  const N_SIMS = 200;
+  const SAMPLE_N = 30;
+
+  // Reference: Normal(0,1) means, n=30
+  let refMeans = [];
+  let failMeans = [];
+
+  function sampleMeansFrom(sampleFn) {
+    const arr = [];
+    for (let s = 0; s < N_SIMS; s++) {
+      let sum = 0;
+      for (let i = 0; i < SAMPLE_N; i++) sum += sampleFn();
+      arr.push(sum / SAMPLE_N);
+    }
+    return arr;
+  }
+
+  function simulate() {
+    // Reference is always iid N(0,1)
+    refMeans = sampleMeansFrom(() => randNormal(0, 1));
+
+    if (activeTab === 'cauchy') {
+      failMeans = sampleMeansFrom(() => randCauchy(0, 1));
+    } else if (activeTab === 'autocorr') {
+      const phi = parseFloat(document.getElementById('fail_phi').value);
+      failMeans = [];
+      for (let s = 0; s < N_SIMS; s++) {
+        const series = generateAR1(SAMPLE_N, phi, 1);
+        failMeans.push(series.reduce((a, b) => a + b, 0) / SAMPLE_N);
+      }
+    } else {
+      // exploding variance: 90% N(0,1) + 10% N(0, explSD)
+      const explSD = parseFloat(document.getElementById('fail_explsd').value);
+      failMeans = sampleMeansFrom(() => Math.random() < 0.9 ? randNormal(0, 1) : randNormal(0, explSD));
+    }
+    drawFail();
+  }
+
+  function computeHistogram(data, xMin, xMax, numBins) {
+    const bins = new Array(numBins).fill(0);
+    const bw = (xMax - xMin) / numBins;
+    let clipped = 0;
+    for (const v of data) {
+      const b = Math.floor((v - xMin) / bw);
+      if (b >= 0 && b < numBins) bins[b]++;
+      else clipped++;
+    }
+    return { bins, bw, clipped };
+  }
+
+  function drawPanel(x0, x1, pT, pB, means, label, color, xMin, xMax, theoreticalSE) {
+    const pw = x1 - x0;
+    const ph = pB - pT;
+    const NUM_BINS = 30;
+    const { bins, bw, clipped } = computeHistogram(means, xMin, xMax, NUM_BINS);
+
+    function valToX(v) { return x0 + (v - xMin) / (xMax - xMin) * pw; }
+
+    const total = means.length;
+    const maxBinDensity = Math.max(...bins.map(c => c / (total * bw)), 0.001);
+    const maxThPdf = theoreticalSE > 0 ? gaussianPDF(0, 0, theoreticalSE) : 0;
+    const refDensity = Math.max(maxBinDensity, maxThPdf) * 1.2;
+    function densToY(d) { return pB - (d / refDensity) * ph; }
+
+    // Histogram
+    const rgb = color === 'blue' ? '37,99,235' : '220,38,38';
+    ctx.fillStyle = 'rgba(' + rgb + ',0.2)';
+    ctx.strokeStyle = 'rgba(' + rgb + ',0.6)';
+    ctx.lineWidth = 0.5;
+    for (let b = 0; b < NUM_BINS; b++) {
+      if (bins[b] === 0) continue;
+      const density = bins[b] / (total * bw);
+      const bh = (density / refDensity) * ph;
+      const bx = valToX(xMin + b * bw);
+      const bxEnd = valToX(xMin + (b + 1) * bw);
+      ctx.fillRect(bx, pB - bh, bxEnd - bx, bh);
+      ctx.strokeRect(bx, pB - bh, bxEnd - bx, bh);
+    }
+
+    // Theoretical normal overlay
+    if (theoreticalSE > 0) {
+      ctx.strokeStyle = 'rgba(100,116,139,0.6)';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([5, 4]);
+      ctx.beginPath();
+      let first = true;
+      for (let v = xMin; v <= xMax; v += (xMax - xMin) / 300) {
+        const pdf = gaussianPDF(v, 0, theoreticalSE);
+        first ? ctx.moveTo(valToX(v), densToY(pdf)) : ctx.lineTo(valToX(v), densToY(pdf));
+        first = false;
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // Axis
+    ctx.strokeStyle = '#bbb'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x0, pB); ctx.lineTo(x1, pB); ctx.stroke();
+    ctx.fillStyle = '#777'; ctx.font = '11px "Source Sans 3",sans-serif'; ctx.textAlign = 'center';
+    const tickStep = (xMax - xMin) <= 4 ? 0.5 : ((xMax - xMin) <= 10 ? 1 : 5);
+    const startTick = Math.ceil(xMin / tickStep) * tickStep;
+    for (let v = startTick; v <= xMax + 0.001; v += tickStep) {
+      const xS = valToX(v);
+      if (xS >= x0 && xS <= x1) {
+        ctx.beginPath(); ctx.moveTo(xS, pB); ctx.lineTo(xS, pB + 4); ctx.stroke();
+        ctx.fillText(v.toFixed(tickStep < 1 ? 1 : 0), xS, pB + 16);
+      }
+    }
+
+    // Panel label
+    ctx.fillStyle = 'rgba(' + rgb + ',0.9)';
+    ctx.font = '700 12px "Source Sans 3",sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(label, x0 + 4, pT - 10);
+
+    // Clipped label
+    if (clipped > 0) {
+      ctx.fillStyle = '#dc2626';
+      ctx.font = '600 11px "Source Sans 3",sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText(clipped + ' means outside axis (' + (clipped / total * 100).toFixed(0) + '%)', x1 - 4, pT - 10);
+    }
+
+    // Actual SD of means
+    const meanOfMeans = means.reduce((a, b) => a + b, 0) / means.length;
+    const sdMeans = Math.sqrt(means.map(m => (m - meanOfMeans) ** 2).reduce((a, b) => a + b, 0) / (means.length - 1));
+    ctx.fillStyle = '#64748b';
+    ctx.font = '11px "Source Sans 3",sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('Actual SD(x̄) = ' + sdMeans.toFixed(3), x0 + 4, pB + 30);
+    if (theoreticalSE > 0) {
+      ctx.fillText('Predicted SE = ' + theoreticalSE.toFixed(3), x0 + 4, pB + 44);
+    }
+  }
+
+  function drawFail() {
+    ctx.clearRect(0, 0, W, H);
+    const LP = { l: 40, r: 390, t: 50, b: 280 };
+    const RP = { l: 430, r: 790, t: 50, b: 280 };
+    const theorSE = 1 / Math.sqrt(SAMPLE_N); // σ=1, n=30 → ≈ 0.183
+
+    // Separator
+    ctx.strokeStyle = '#e5e5e5'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(410, 30); ctx.lineTo(410, 300); ctx.stroke();
+
+    // Left: always the reference (Normal)
+    drawPanel(LP.l, LP.r, LP.t, LP.b, refMeans, 'Normal Distribution  (CLT works)', 'blue', -1.5, 1.5, theorSE);
+
+    // Right: the failure mode
+    if (activeTab === 'cauchy') {
+      // Cauchy means also Cauchy — clip histogram to show contrast
+      drawPanel(RP.l, RP.r, RP.t, RP.b, failMeans, 'Cauchy Distribution  (CLT fails)', 'red', -10, 10, 0);
+    } else if (activeTab === 'autocorr') {
+      const phi = parseFloat(document.getElementById('fail_phi').value);
+      // Actual SE for AR(1) with given phi
+      const actualSE = Math.sqrt((1 + phi) / (SAMPLE_N * (1 - phi)));
+      const xRange = Math.max(1.5, actualSE * 5);
+      drawPanel(RP.l, RP.r, RP.t, RP.b, failMeans, 'AR(1) φ=' + phi.toFixed(2) + '  (CLT fails)', 'red', -xRange, xRange, actualSE);
+    } else {
+      const explSD = parseFloat(document.getElementById('fail_explsd').value);
+      // Effective SD: mixture variance = 0.9*1 + 0.1*explSD²
+      const effVar = 0.9 * 1 + 0.1 * explSD * explSD;
+      const effSE = Math.sqrt(effVar / SAMPLE_N);
+      const xRange = Math.max(1.5, effSE * 4);
+      drawPanel(RP.l, RP.r, RP.t, RP.b, failMeans, 'Mixture (10% explosive σ=' + explSD + ')', 'red', -xRange, xRange, effSE);
+    }
+
+    // Legend
+    ctx.strokeStyle = 'rgba(100,116,139,0.65)'; ctx.lineWidth = 2;
+    ctx.setLineDash([5, 4]);
+    ctx.beginPath(); ctx.moveTo(LP.l + 4, LP.t + 14); ctx.lineTo(LP.l + 34, LP.t + 14); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#64748b'; ctx.font = '11px "Source Sans 3",sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText('Predicted N(0, SE) by CLT', LP.l + 38, LP.t + 18);
+
+    // Stats readout
+    let statsHtml = '<span class="stat">n = <strong>' + SAMPLE_N + '</strong></span>' +
+      '<span class="stat">Samples simulated = <strong>' + N_SIMS + '</strong></span>';
+    if (activeTab === 'autocorr') {
+      const phi = parseFloat(document.getElementById('fail_phi').value);
+      const actualSE = Math.sqrt((1 + phi) / (SAMPLE_N * (1 - phi)));
+      const effN = Math.round(SAMPLE_N * (1 - phi) / (1 + phi));
+      statsHtml += '<span class="stat">Theoretical SE (if independent) = <strong>' + theorSE.toFixed(3) + '</strong></span>' +
+        '<span class="stat">Actual SE (AR φ=' + phi.toFixed(2) + ') = <strong>' + actualSE.toFixed(3) + '</strong></span>' +
+        '<span class="stat is-danger">Effective n = <strong>' + effN + '</strong> (not ' + SAMPLE_N + ')</span>';
+    }
+    document.getElementById('fail-stats').innerHTML = statsHtml;
+  }
+
+  // Tab switching
+  document.getElementById('fail-tabs').querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById('fail-tabs').querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeTab = btn.dataset.fail;
+      // Show/hide controls
+      document.querySelectorAll('.fail-ctrl').forEach(el => el.classList.add('is-hidden'));
+      document.getElementById('fail-' + activeTab + '-controls').classList.remove('is-hidden');
+      simulate();
+    });
+  });
+
+  document.getElementById('fail-resim-btn').addEventListener('click', simulate);
+  document.getElementById('fail_phi').addEventListener('input', () => {
+    document.getElementById('fail_phi_val').textContent = parseFloat(document.getElementById('fail_phi').value).toFixed(2);
+    simulate();
+  });
+  document.getElementById('fail_explsd').addEventListener('input', () => {
+    document.getElementById('fail_explsd_val').textContent = document.getElementById('fail_explsd').value;
+    simulate();
+  });
+
+  simulate();
+})();
+
+
+// ===== NORMAL DISTRIBUTION EXPLORER =====
+(function () {
+  const canvas = document.getElementById('normalDistCanvas');
+  const ctx = setupCanvas(canvas);
+  const W = 820, H = 270;
+
+  // Band definitions: drawn outside-in so inner fills sit on top
+  const BANDS = [
+    { mult: 3, fill: 'rgba(219,234,254,0.75)', stroke: '#93c5fd', pct: '99.7%' },
+    { mult: 2, fill: 'rgba(147,197,253,0.55)', stroke: '#60a5fa', pct: '95.5%' },
+    { mult: 1, fill: 'rgba(59,130,246,0.30)',  stroke: '#3b82f6', pct: '68.3%' },
+  ];
+
+  function draw() {
+    const mu    = parseFloat(document.getElementById('nd_mu').value);
+    const sigma = parseFloat(document.getElementById('nd_sigma').value);
+    document.getElementById('nd_mu_val').textContent    = mu.toFixed(1);
+    document.getElementById('nd_sigma_val').textContent = sigma.toFixed(1);
+
+    ctx.clearRect(0, 0, W, H);
+
+    const padL = 70, padR = 30, padT = 55, padB = 50;
+    const plotW = W - padL - padR;
+    const plotH = H - padT - padB;
+
+    const xMin = -12;
+    const xMax = 12;
+    function valToX(v) { return padL + (v - xMin) / (xMax - xMin) * plotW; }
+    const maxPdf = gaussianPDF(mu, mu, sigma) * 1.18;
+    function pdfToY(p) { return padT + plotH - (p / maxPdf) * plotH; }
+
+    // Shaded bands
+    for (const band of BANDS) {
+      const lo = mu - band.mult * sigma, hi = mu + band.mult * sigma;
+      ctx.fillStyle = band.fill;
+      ctx.beginPath();
+      ctx.moveTo(valToX(lo), padT + plotH);
+      for (let x = lo; x <= hi; x += (hi - lo) / 200)
+        ctx.lineTo(valToX(x), pdfToY(gaussianPDF(x, mu, sigma)));
+      ctx.lineTo(valToX(hi), padT + plotH);
+      ctx.fill();
+    }
+
+    // PDF curve
+    ctx.strokeStyle = '#1d4ed8';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    let first = true;
+    for (let x = xMin; x <= xMax; x += (xMax - xMin) / 400) {
+      first ? ctx.moveTo(valToX(x), pdfToY(gaussianPDF(x, mu, sigma)))
+            : ctx.lineTo(valToX(x), pdfToY(gaussianPDF(x, mu, sigma)));
+      first = false;
+    }
+    ctx.stroke();
+
+    // μ dashed vertical
+    ctx.strokeStyle = '#64748b';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 3]);
+    ctx.beginPath();
+    ctx.moveTo(valToX(mu), padT + plotH);
+    ctx.lineTo(valToX(mu), padT + 4);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Empirical-rule brackets drawn above the curve peak, stacked by band
+    const bracketColors = ['#1d4ed8', '#1e40af', '#1e3a8a'];
+    const bracketY      = [padT + 12, padT + 26, padT + 40]; // row for each band (1σ, 2σ, 3σ)
+    for (let i = 0; i < 3; i++) {
+      const m  = i + 1;
+      const lx = valToX(mu - m * sigma);
+      const rx = valToX(mu + m * sigma);
+      const cy = bracketY[i];
+
+      ctx.strokeStyle = bracketColors[i];
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(lx, cy); ctx.lineTo(rx, cy); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(lx, cy - 4); ctx.lineTo(lx, cy + 4); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(rx, cy - 4); ctx.lineTo(rx, cy + 4); ctx.stroke();
+
+      ctx.fillStyle = bracketColors[i];
+      ctx.font = '700 11px "Source Sans 3",sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(BANDS[2 - i].pct, valToX(mu), cy - 6);
+    }
+
+    // X-axis
+    ctx.strokeStyle = '#bbb'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(padL, padT + plotH); ctx.lineTo(W - padR, padT + plotH); ctx.stroke();
+
+    // Sigma tick labels on x-axis
+    ctx.fillStyle = '#555';
+    ctx.font = '11px "Source Sans 3",sans-serif';
+    ctx.textAlign = 'center';
+    for (let x = -12; x <= 12; x += 2) {
+      const xS = valToX(x);
+      ctx.strokeStyle = '#ddd'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(xS, padT + plotH); ctx.lineTo(xS, padT + plotH + 5); ctx.stroke();
+      ctx.fillStyle = '#555';
+      ctx.fillText(x.toFixed(0), xS, padT + plotH + 18);
+    }
+
+    ctx.fillStyle = '#777';
+    ctx.font = '12px "Source Sans 3",sans-serif';
+    ctx.fillText('x', padL + plotW / 2, H - 5);
+
+    // Y-axis label
+    ctx.save();
+    ctx.translate(18, padT + plotH / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillStyle = '#888';
+    ctx.font = '11px "Source Sans 3",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Probability Density', 0, 0);
+    ctx.restore();
+
+    // Stats readout
+    document.getElementById('nd-stats').innerHTML =
+      `<span class="stat">μ = <strong>${mu.toFixed(1)}</strong></span>` +
+      `<span class="stat">σ = <strong>${sigma.toFixed(1)}</strong></span>` +
+      `<span class="stat">μ ± 1σ → <strong>68.3%</strong></span>` +
+      `<span class="stat">μ ± 2σ → <strong>95.5%</strong></span>` +
+      `<span class="stat">μ ± 3σ → <strong>99.7%</strong></span>`;
+  }
+
+  ['nd_mu', 'nd_sigma'].forEach(id => document.getElementById(id).addEventListener('input', draw));
+  draw();
+})();
+
+
+// ===== RENDER KATEX =====
+document.addEventListener('DOMContentLoaded', () => {
+  renderMathInElement(document.body, {
+    delimiters: [
+      { left: '$$', right: '$$', display: true },
+      { left: '\\(', right: '\\)', display: false },
+      { left: '$', right: '$', display: false }
+    ],
+    throwOnError: false
+  });
+});
+</script>
+</body>
+</html>

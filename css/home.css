@@ -1,0 +1,115 @@
+.hero {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 80px 24px 56px;
+  border-bottom: 1px solid var(--border);
+}
+
+.hero .course-tag {
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--accent);
+  margin-bottom: 16px;
+}
+
+.hero .subtitle {
+  font-size: 1.2rem;
+  max-width: 580px;
+}
+
+.chapters {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 56px 24px 80px;
+}
+
+.chapters h2 {
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--text-secondary);
+  margin-bottom: 32px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 28px 24px 24px;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: box-shadow 0.15s, border-color 0.15s, transform 0.15s;
+}
+
+.card:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.card.disabled {
+  opacity: 0.45;
+  pointer-events: none;
+  cursor: default;
+}
+
+.card-num {
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--accent);
+}
+
+.card h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.card p {
+  font-family: var(--sans);
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.badge {
+  display: inline-block;
+  font-family: var(--sans);
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 99px;
+  margin-top: auto;
+  align-self: flex-start;
+}
+
+.badge.ready {
+  background: var(--green-light);
+  color: #065f46;
+}
+
+.badge.coming {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+footer {
+  text-align: center;
+  padding: 32px 24px;
+  font-size: 0.82rem;
+  color: #aaa;
+  border-top: 1px solid var(--border);
+}

@@ -3,203 +3,72 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BPK 304 — Statistics for Kinesiology</title>
+<title>BPK 304w — Statistics for Kinesiology</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,300;1,8..60,400&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --serif: 'Source Serif 4', Georgia, serif;
-    --sans: 'Source Sans 3', 'Helvetica Neue', sans-serif;
-    --bg: #faf9f6;
-    --text: #1a1a2e;
-    --text-secondary: #555;
-    --accent: #2563eb;
-    --accent-light: #dbeafe;
-    --accent-dark: #1e40af;
-    --green: #059669;
-    --border: #e5e5e5;
-    --card-bg: #ffffff;
-  }
-
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { font-size: 17px; scroll-behavior: smooth; }
-  body {
-    font-family: var(--serif);
-    color: var(--text);
-    background: var(--bg);
-    line-height: 1.75;
-    -webkit-font-smoothing: antialiased;
-  }
-
-  /* HEADER */
-  .hero {
-    max-width: 860px;
-    margin: 0 auto;
-    padding: 80px 24px 56px;
-    border-bottom: 1px solid var(--border);
-  }
-  .hero .course-tag {
-    font-family: var(--sans);
-    font-size: 0.78rem;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: var(--accent);
-    margin-bottom: 16px;
-  }
-  .hero h1 {
-    font-size: 2.8rem;
-    font-weight: 700;
-    line-height: 1.15;
-    margin-bottom: 20px;
-    letter-spacing: -0.5px;
-  }
-  .hero .subtitle {
-    font-size: 1.2rem;
-    font-weight: 300;
-    color: var(--text-secondary);
-    max-width: 580px;
-    line-height: 1.6;
-  }
-
-  /* CHAPTER GRID */
-  .chapters {
-    max-width: 860px;
-    margin: 0 auto;
-    padding: 56px 24px 80px;
-  }
-  .chapters h2 {
-    font-family: var(--sans);
-    font-size: 0.78rem;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: var(--text-secondary);
-    margin-bottom: 32px;
-  }
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 20px;
-  }
-  .card {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 28px 24px 24px;
-    text-decoration: none;
-    color: inherit;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    transition: box-shadow 0.15s, border-color 0.15s, transform 0.15s;
-  }
-  .card:hover {
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    border-color: var(--accent);
-    transform: translateY(-2px);
-  }
-  .card.disabled {
-    opacity: 0.45;
-    pointer-events: none;
-    cursor: default;
-  }
-  .card-num {
-    font-family: var(--sans);
-    font-size: 0.72rem;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: var(--accent);
-  }
-  .card h3 {
-    font-size: 1.1rem;
-    font-weight: 600;
-    line-height: 1.3;
-  }
-  .card p {
-    font-family: var(--sans);
-    font-size: 0.88rem;
-    color: var(--text-secondary);
-    line-height: 1.5;
-  }
-  .badge {
-    display: inline-block;
-    font-family: var(--sans);
-    font-size: 0.7rem;
-    padding: 2px 8px;
-    border-radius: 99px;
-    margin-top: auto;
-    align-self: flex-start;
-  }
-  .badge.ready { background: #d1fae5; color: #065f46; }
-  .badge.coming { background: #f3f4f6; color: #6b7280; }
-
-  footer {
-    text-align: center;
-    padding: 32px 24px;
-    font-family: var(--sans);
-    font-size: 0.82rem;
-    color: #aaa;
-    border-top: 1px solid var(--border);
-  }
-</style>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/home.css">
 </head>
 <body>
 
 <div class="hero">
-  <div class="course-tag">BPK 304 · Statistics for Kinesiology</div>
-  <h1>Visual Statistics<br>Tutorials</h1>
-  <p class="subtitle">Interactive, visual explorations of statistical concepts — built for movement science students.</p>
+  <div class="course-tag">BPK 304w · Statistics for Kinesiology</div>
+  <h1>Summer 2026</h1>
+  <p>Welcome to BPK 304w!</p>
+  <p>This site contains all the Lab/tutorial materials. Each week’s content <s>will</s> may be released on the Monday of that week . </p>
+  
 </div>
 
 <div class="chapters">
-  <h2>Chapters</h2>
+  <h2>Weeks</h2>
   <div class="grid">
 
-    <a class="card disabled" href="chapters/normal-distribution.html">
-      <div class="card-num">Chapter 1</div>
-      <h3>The Normal Distribution</h3>
-      <p>Mean, variance, and why so many biological measurements cluster in a bell curve.</p>
-      <span class="badge coming">Coming soon</span>
-    </a>
-
-    <a class="card" href="chapters/t-tests.html">
-      <div class="card-num">Chapter 2</div>
-      <h3>T-Tests</h3>
-      <p>One-sample, independent, and paired t-tests with interactive visualizations and worked examples.</p>
+    <a class="card" href="chapters/normal-distribution.html">
+      <div class="card-num">Week 1</div>
+      <h3>Descriptive Statistics &amp; the CLT</h3>
+      <p>Types of data, central tendency, variability, and the Central Limit Theorem — with interactive simulations and CLT failure modes.</p>
       <span class="badge ready">Available</span>
     </a>
 
+    <a class="card" href="chapters/t-tests.html">
+      <div class="card-num">Week 2</div>
+      <h3>T-Tests</h3>
+      <p>One-sample, independent, and paired t-tests with interactive visualizations and worked examples.</p>
+      <span class="badge coming">WIP</span>
+    </a>
+
     <a class="card disabled" href="chapters/anova.html">
-      <div class="card-num">Chapter 3</div>
+      <div class="card-num">Week 3</div>
       <h3>ANOVA</h3>
       <p>Comparing three or more group means — variance partitioning and F-ratios explained visually.</p>
       <span class="badge coming">Coming soon</span>
     </a>
 
     <a class="card disabled" href="chapters/correlation.html">
-      <div class="card-num">Chapter 4</div>
+      <div class="card-num">Week 4</div>
       <h3>Correlation &amp; Regression</h3>
       <p>Pearson r, scatter plots, and simple linear regression for movement data.</p>
       <span class="badge coming">Coming soon</span>
     </a>
 
     <a class="card disabled" href="chapters/nonparametric.html">
-      <div class="card-num">Chapter 5</div>
+      <div class="card-num">Week 5</div>
       <h3>Non-Parametric Tests</h3>
       <p>Mann-Whitney U, Wilcoxon signed-rank, and Kruskal-Wallis for non-normal data.</p>
       <span class="badge coming">Coming soon</span>
     </a>
 
     <a class="card disabled" href="chapters/signal-processing.html">
-      <div class="card-num">Chapter 6</div>
-      <h3>Signal Processing</h3>
-      <p>Filtering, FFT, and time-series analysis of biomechanical signals.</p>
+      <div class="card-num">Week 6</div>
+      <h3>TBD</h3>
+      <p>TBD.</p>
       <span class="badge coming">Coming soon</span>
     </a>
 
   </div>
 </div>
 
-<footer>BPK 304 · Simon Fraser University · Updated 2026</footer>
+<footer>BPK 304W · Simon Fraser University · LastUpdated 05/22/2026</footer>
 
 </body>
 </html>

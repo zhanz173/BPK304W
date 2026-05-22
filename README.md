@@ -1,6 +1,6 @@
-# BPK 304 — Visual Statistics Tutorials
+# BPK 304w — Inquiry and Measurement in Biomedical Physiology and Kinesiology
 
-Interactive statistics tutorials for BPK 304 at Simon Fraser University.
+Tutorials for BPK 304w at Simon Fraser University.
 
 **Live site:** https://YOUR-USERNAME.github.io/YOUR-REPO-NAME/
 
@@ -10,12 +10,8 @@ Interactive statistics tutorials for BPK 304 at Simon Fraser University.
 stats-course/
 ├── index.html              ← landing page
 ├── chapters/
-│   ├── t-tests.html        ← available
-│   ├── normal-distribution.html
-│   ├── anova.html
-│   ├── correlation.html
-│   ├── nonparametric.html
-│   └── signal-processing.html
+│   ├── week 1 (Descriptive Statistics)
+│   ├── week 2 (t-test)
 ├── css/                    ← shared styles (future)
 ├── js/                     ← shared scripts (future)
 └── assets/images/
