@@ -2,7 +2,7 @@
 
 Tutorials for BPK 304w at Simon Fraser University.
 
-**Live site:** https://YOUR-USERNAME.github.io/YOUR-REPO-NAME/
+**Live site:** https://zhanz173.github.io/BPK304W/
 
 ## Structure
 
@@ -25,4 +25,4 @@ git commit -m "describe your change"
 git push
 ```
 
-GitHub Pages rebuilds automatically on every push to `main`.
+GitHub Pages rebuilds automatically on every push to `master`.
