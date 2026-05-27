@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ANOVA — Analysis of Variance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,300;1,8..60,400&family=JetBrains+Mono:wght@400;500&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/chapter.css">
+<style>
+.ss-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 24px 0;
+  font-family: var(--sans);
+  font-size: 0.82rem;
+}
+.ss-table th {
+  background: var(--accent);
+  color: #fff;
+  padding: 9px 12px;
+  text-align: left;
+  font-weight: 600;
+}
+.ss-table th:first-child { border-radius: 8px 0 0 0; }
+.ss-table th:last-child  { border-radius: 0 8px 0 0; }
+.ss-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.ss-table tr:nth-child(even) td { background: var(--sidenote-bg); }
+.ss-table .total-row td { font-weight: 700; border-top: 2px solid var(--border); background: var(--sidenote-bg); }
+
+.effects-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 20px 0;
+}
+.effect-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+.effect-card .etype {
+  font-family: var(--sans);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-secondary);
+  margin-bottom: 3px;
+}
+.effect-card .ename {
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--accent);
+}
+.effect-card .edesc {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+.effect-card.full { grid-column: 1 / -1; }
+
+.interaction-legend {
+  display: flex;
+  gap: 24px;
+  margin-top: 10px;
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  justify-content: center;
+}
+.ldot {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+
+/* ---- Quiz ---- */
+.scenario-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px 28px 20px;
+  margin: 28px 0;
+  box-shadow: 0 1px 4px rgba(0,0,0,.04);
+}
+.sc-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 14px; }
+.sc-num {
+  font-family: var(--sans); font-size: 0.72rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent); white-space: nowrap;
+}
+.sc-title { font-family: var(--sans); font-size: 1.05rem; font-weight: 700; }
+.sc-text { font-size: 0.93rem; line-height: 1.7; margin-bottom: 14px; }
+.dv-pill {
+  display: inline-block;
+  font-family: var(--sans); font-size: 0.78rem; font-weight: 600;
+  background: var(--accent-light); color: var(--accent-dark);
+  padding: 3px 10px; border-radius: 20px; margin-bottom: 18px;
+}
+.quiz-step { border-top: 1px solid var(--border); padding: 16px 0 8px; }
+.qs-label {
+  font-family: var(--sans); font-size: 0.75rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); margin-bottom: 8px;
+}
+.qs-q { font-size: 0.95rem; margin-bottom: 11px; }
+.choice-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+.cbtn {
+  font-family: var(--sans); font-size: 0.84rem; font-weight: 600;
+  padding: 7px 16px;
+  border: 1.5px solid var(--border); border-radius: 6px;
+  background: var(--card-bg); color: var(--text);
+  cursor: pointer; transition: all .15s;
+}
+.cbtn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.cbtn.sel   { border-color: var(--accent); background: var(--accent-light); color: var(--accent-dark); }
+.cbtn.ok    { border-color: var(--green); background: var(--green-light); color: var(--green); }
+.cbtn.bad   { border-color: var(--red); background: var(--red-light); color: var(--red); }
+.cbtn.reveal{ border-color: var(--green); background: var(--green-light); color: var(--green); }
+.cbtn:disabled { cursor: default; }
+.qfb {
+  font-family: var(--sans); font-size: 0.85rem;
+  padding: 10px 14px; border-radius: 6px; margin: 8px 0;
+  display: none; line-height: 1.6;
+}
+.qfb.show { display: block; }
+.qfb.ok  { background: var(--green-light); color: #065f46; border-left: 3px solid var(--green); }
+.qfb.bad { background: var(--red-light);   color: #991b1b; border-left: 3px solid var(--red); }
+.step-locked { opacity: .4; pointer-events: none; }
+.breakdown { display: none; margin: 14px 0 4px; }
+.breakdown.show { display: block; }
+.breakdown table { width: 100%; border-collapse: collapse; font-family: var(--sans); font-size: 0.84rem; }
+.breakdown th {
+  background: var(--sidenote-bg); padding: 7px 12px; text-align: left;
+  font-weight: 700; color: var(--text-secondary); font-size: 0.73rem;
+  text-transform: uppercase; letter-spacing: .5px;
+}
+.breakdown td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.ltag {
+  display: inline-block; font-size: 0.74rem; font-weight: 600;
+  padding: 2px 7px; border-radius: 4px; margin: 2px 2px;
+}
+.ltag.bt { background: var(--accent-light); color: var(--accent-dark); }
+.ltag.wt { background: var(--green-light);  color: var(--green); }
+.score-bar {
+  font-family: var(--sans); font-size: 1rem; font-weight: 700;
+  text-align: center; padding: 16px;
+  background: var(--sidenote-bg); border-radius: 8px; margin: 12px 0;
+}
+@media (max-width: 640px) {
+  .effects-grid { grid-template-columns: 1fr; }
+  .effect-card.full { grid-column: 1; }
+  .choice-grid { flex-direction: column; }
+  .scenario-card { padding: 18px 14px; }
+}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="byline">Week 3 · Inferential Statistics</div>
+  <h1>Analysis of Variance (ANOVA)</h1>
+  <p class="subtitle">When comparing three or more group means, ANOVA tests whether at least one mean differs — in a single step that keeps the Type I error rate under control.</p>
+</header>
+
+<!-- TOC -->
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#why-anova">1. Why Not Multiple T-Tests?</a></li>
+    <li><a href="#variance">2. Partitioning Variance &amp; the F-Statistic</a></li>
+    <li><a href="#hypotheses">3. Hypotheses &amp; Assumptions</a></li>
+    <li><a href="#factors">4. Number of Factors</a></li>
+    <li><a href="#designs">5. Experimental Designs</a></li>
+    <li><a href="#practice">6. Practice: Identify &amp; Choose</a></li>
+  </ol>
+</nav>
+
+<!-- ARTICLE -->
+<main class="article">
+
+<!-- ====== 1: WHY ANOVA ====== -->
+<section id="why-anova">
+  <h2><span class="section-num">1</span> Why Not Multiple T-Tests?</h2>
+
+  <p>The independent-samples \(t\)-test compares exactly two group means. When a study has three or more groups, researchers are tempted to simply run one \(t\)-test per pair. This approach is statistically invalid.</p>
+
+  <h3>The Family-Wise Error Problem</h3>
+  <p>Every hypothesis test carries an \(\alpha\) (typically \(0.05\)) — the probability of a <strong>Type I Error</strong>: rejecting a true null hypothesis by chance. Running multiple tests compounds this risk. The probability of at least one false positive across \(c\) independent comparisons is:</p>
+
+  <div class="math-block">
+    $$\text{Family-Wise Error Rate} = 1 - (1-\alpha)^c$$
+  </div>
+
+  <p>The number of pairwise comparisons grows quickly with group count: \(c = \frac{k(k-1)}{2}\).</p>
+
+  <table class="comparison-table">
+    <thead><tr><th>Groups (\(k\))</th><th>Comparisons (\(c\))</th><th>Family-Wise Error Rate</th></tr></thead>
+    <tbody>
+      <tr><td>3</td><td>3</td><td>\(1 - 0.95^3 \approx 14.3\%\)</td></tr>
+      <tr><td>4</td><td>6</td><td>\(1 - 0.95^6 \approx 26.5\%\)</td></tr>
+      <tr><td>5</td><td>10</td><td>\(1 - 0.95^{10} \approx 40.1\%\)</td></tr>
+      <tr><td>6</td><td>15</td><td>\(1 - 0.95^{15} \approx 53.7\%\)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>The ANOVA Solution: One Omnibus Test</h3>
+  <p>ANOVA evaluates all groups <em>simultaneously</em> in a single test — the word <strong>omnibus</strong> ("all-inclusive") captures this. The global Type I error rate stays locked at exactly \(\alpha\) regardless of how many groups are involved.</p>
+
+  <div class="callout intuition">
+    <div class="callout-label">💡 Analogy</div>
+    Running many pairwise \(t\)-tests is like buying 10 lottery tickets and being surprised when one wins. Each ticket has a small chance — but with enough tickets, a win becomes likely even if the game is fair. ANOVA is buying just one ticket.
+  </div>
+</section>
+
+<!-- ====== 2: VARIANCE & F ====== -->
+<section id="variance">
+  <h2><span class="section-num">2</span> Partitioning Variance &amp; the F-Statistic</h2>
+
+  <p>Although ANOVA compares group <em>means</em>, it does so by analyzing <em>variance</em>. Total variability in a dataset can be cleanly split into two competing sources:</p>
+
+  <div class="math-block">
+    $$SS_{\text{Total}} = \underbrace{SS_{\text{Between}}}_{\text{Signal — treatment effect}} + \underbrace{SS_{\text{Within}}}_{\text{Noise — random error}}$$
+  </div>
+
+  <ul class="list-spaced">
+    <li><strong>Between-Group Variance (Signal):</strong> How far do the group means deviate from the grand mean? Large when the treatment has a strong effect.</li>
+    <li><strong>Within-Group Variance (Noise):</strong> How much do individuals vary <em>inside</em> their own group? This exists regardless of any treatment and captures biological differences, measurement error, and random fluctuation.</li>
+  </ul>
+
+  <h3>The F-Ratio</h3>
+  <p>ANOVA quantifies the treatment effect as a signal-to-noise ratio called the <strong>F-statistic</strong>. We first convert each Sum of Squares into a variance estimate — the <strong>Mean Square (MS)</strong> — by dividing by the appropriate degrees of freedom:</p>
+
+  <div class="math-block">
+    $$F = \frac{MS_{\text{Between}}}{MS_{\text{Within}}} = \frac{\text{Signal + Noise}}{\text{Noise}}$$
+  </div>
+
+  <table class="comparison-table">
+    <thead><tr><th>Scenario</th><th>F-value</th><th>Interpretation</th></tr></thead>
+    <tbody>
+      <tr><td>No treatment effect</td><td>\(F \approx 1\)</td><td>Between ≈ Within; nothing to detect</td></tr>
+      <tr><td>Moderate effect</td><td>\(F > 1\)</td><td>Between exceeds Within; possible signal</td></tr>
+      <tr><td>Strong effect</td><td>\(F \gg 1\)</td><td>Clear signal above background noise</td></tr>
+    </tbody>
+  </table>
+
+  <h3>The F-Distribution</h3>
+  <p>Unlike the symmetric \(t\)-distribution, the F-distribution is <strong>strictly positive</strong> (variance ratios can't be negative) and <strong>right-skewed</strong> — most random F-ratios cluster near 1, but large values occur by chance with decreasing probability. Its shape is governed by two degrees of freedom: \(df_1 = k-1\) (numerator) and \(df_2 = N-k\) (denominator).</p>
+
+  <h3>Interactive F-Ratio Explorer</h3>
+  <p>Adjust the sliders to change how spread apart the group means are (signal) and how much individuals vary within groups (noise). Watch the F-value and p-value respond.</p>
+
+  <div class="figure-container">
+    <div class="fig-title">Figure 1 — F-Ratio Visualizer &nbsp;(k = 3 groups, n = 20 per group)</div>
+    <canvas id="fCanvas" width="820" height="360"></canvas>
+    <div class="controls">
+      <div class="control-group">
+        <label>Between-Group Effect (signal)</label>
+        <input type="range" id="fr_eff" min="0" max="14" step="0.5" value="4">
+        <span class="val" id="fr_eff_v">4.0</span>
+      </div>
+      <div class="control-group">
+        <label>Within-Group SD (noise)</label>
+        <input type="range" id="fr_sd" min="2" max="15" step="0.5" value="7">
+        <span class="val" id="fr_sd_v">7.0</span>
+      </div>
+    </div>
+    <div class="stat-readout" id="fr_stats"></div>
+  </div>
+
+  <h3>Effect Size: \(\eta^2\) (Eta-Squared)</h3>
+  <p>Statistical significance tells you an effect exists; effect size tells you how large it is. <strong>Eta-squared</strong> expresses the proportion of total variance explained by the treatment:</p>
+  <div class="math-block">$$\eta^2 = \frac{SS_{\text{Between}}}{SS_{\text{Total}}}$$</div>
+  <p>Conventions: \(\eta^2 \approx 0.01\) is small, \(\approx 0.06\) is medium, \(\approx 0.14\) is large. Always report alongside the p-value.</p>
+
+</section>
+
+<!-- ====== 3: HYPOTHESES & ASSUMPTIONS ====== -->
+<section id="hypotheses">
+  <h2><span class="section-num">3</span> Hypotheses &amp; Assumptions</h2>
+
+  <h3>Statistical Hypotheses</h3>
+  <div class="math-block">
+    $$H_0: \mu_1 = \mu_2 = \dots = \mu_k \qquad \text{(all group means are equal)}$$
+    $$H_a: \text{at least one } \mu_i \neq \mu_j \text{ for some } i \neq j$$
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-label">⚠ Important Nuance</div>
+    The alternative hypothesis does <em>not</em> claim every group differs from every other. It only says the blanket equality of \(H_0\) is broken somewhere. A significant ANOVA is a global alarm: it tells you a discrepancy exists, but not <em>where</em>. Identifying which pairs differ requires a post-hoc test.
+  </div>
+
+  <h3>Post-Hoc Tests</h3>
+  <p>When \(p < \alpha\), use <strong>Tukey's Honestly Significant Difference (HSD)</strong> to compare all possible pairs while controlling the family-wise error rate. Run post-hoc tests only if — and only if — the omnibus ANOVA is significant.</p>
+
+  <h3>Core Assumptions</h3>
+  <div class="step-flow">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-title">Independence</div>
+      <div class="step-desc">Every observation is independent of every other. Ensured by randomized allocation and preventing participant interaction during data collection.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-title">Normality</div>
+      <div class="step-desc">Scores within each group should be approximately normally distributed. ANOVA is robust to mild violations when \(n > 20\) per group (Central Limit Theorem).</div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-title">Homoscedasticity</div>
+      <div class="step-desc">Group variances should be roughly equal: \(\sigma_1^2 \approx \sigma_2^2 \approx \dots \approx \sigma_k^2\). Test with <strong>Levene's Test</strong> before interpreting output.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== 4: NUMBER OF FACTORS ====== -->
+<section id="factors">
+  <h2><span class="section-num">4</span> Number of Factors</h2>
+
+  <p>Before choosing an ANOVA, clarify the vocabulary of your study:</p>
+
+  <div class="step-flow">
+    <div class="step">
+      <div class="step-num" style="font-size:.9rem">DV</div>
+      <div class="step-title">Dependent Variable</div>
+      <div class="step-desc">The outcome you measure — e.g., muscle strength, reaction time, pain score. There is always exactly one DV in a standard ANOVA.</div>
+    </div>
+    <div class="step">
+      <div class="step-num" style="font-size:.9rem">IV</div>
+      <div class="step-title">Factor (Independent Variable)</div>
+      <div class="step-desc">A categorical variable hypothesized to influence the DV. The <em>number</em> of factors determines the "way" of your ANOVA.</div>
+    </div>
+    <div class="step">
+      <div class="step-num" style="font-size:.9rem">L</div>
+      <div class="step-title">Levels</div>
+      <div class="step-desc">The specific categories within each factor. A "Dose" factor might have levels: None, Low, High. Each factor must have at least 2 levels.</div>
+    </div>
+  </div>
+
+  <h3>One-Way ANOVA</h3>
+  <p>One categorical independent variable with three or more levels and one continuous DV.</p>
+
+  <div class="callout">
+    <div class="callout-label">📐 Note</div>
+    A one-way ANOVA with exactly two levels is mathematically equivalent to an independent-samples \(t\)-test. Use the \(t\)-test in that case for convention.
+  </div>
+
+  <table class="ss-table">
+    <thead>
+      <tr><th>Source</th><th>Sum of Squares</th><th>\(df\)</th><th>Mean Square</th><th>F-Ratio</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Between Groups</strong></td>
+        <td>\(SS_\text{Between}\)</td>
+        <td>\(k - 1\)</td>
+        <td>\(\dfrac{SS_\text{Between}}{k-1}\)</td>
+        <td>\(\dfrac{MS_\text{Between}}{MS_\text{Within}}\)</td>
+      </tr>
+      <tr>
+        <td><strong>Within Groups</strong></td>
+        <td>\(SS_\text{Within}\)</td>
+        <td>\(N - k\)</td>
+        <td>\(\dfrac{SS_\text{Within}}{N-k}\)</td>
+        <td>—</td>
+      </tr>
+      <tr class="total-row">
+        <td><strong>Total</strong></td>
+        <td>\(SS_\text{Total}\)</td>
+        <td>\(N - 1\)</td>
+        <td>—</td><td>—</td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="font-size:.85rem;color:var(--text-secondary)">\(k\) = number of groups; \(N\) = total sample size.</p>
+
+  <h3>Two-Way ANOVA: Main Effects and Interactions</h3>
+  <p>Two categorical IVs are studied simultaneously. The ANOVA produces <strong>three</strong> separate F-tests:</p>
+  <ol class="list-spaced">
+    <li><strong>Main Effect of A:</strong> Does the DV differ across levels of A, averaging over all levels of B?</li>
+    <li><strong>Main Effect of B:</strong> Does the DV differ across levels of B, averaging over all levels of A?</li>
+    <li><strong>Interaction (A × B):</strong> Does the effect of A on the DV <em>change depending on</em> which level of B is present?</li>
+  </ol>
+
+  <div class="callout intuition">
+    <div class="callout-label">💡 The Interaction Concept</div>
+    An interaction is best summarized as <em>"it depends."</em> If white noise improves performance on simple tasks but hurts it on complex tasks, the effect of noise <em>depends on</em> task type — that is an interaction. When an interaction is significant, interpreting main effects in isolation is misleading.
+  </div>
+
+  <h3>Interaction Plot Explorer</h3>
+  <p>Adjust the sliders. When the two lines are <strong>parallel</strong>, there is no interaction — the effect of Factor A is identical at every level of B. When lines <strong>converge, diverge, or cross</strong>, an interaction is present.</p>
+
+  <div class="figure-container">
+    <div class="fig-title">Figure 2 — Two-Way Interaction Explorer (Factor A × Factor B)</div>
+    <canvas id="intCanvas" width="820" height="360"></canvas>
+    <div class="interaction-legend">
+      <span><span class="ldot" style="background:#2563eb"></span>Level B₁</span>
+      <span><span class="ldot" style="background:#d97706"></span>Level B₂</span>
+    </div>
+    <div class="controls">
+      <div class="control-group">
+        <label>Main Effect of A</label>
+        <input type="range" id="ia" min="-12" max="12" step="1" value="6">
+        <span class="val" id="ia_v">+6</span>
+      </div>
+      <div class="control-group">
+        <label>Main Effect of B</label>
+        <input type="range" id="ib" min="-12" max="12" step="1" value="4">
+        <span class="val" id="ib_v">+4</span>
+      </div>
+      <div class="control-group">
+        <label>A × B Interaction</label>
+        <input type="range" id="iab" min="-16" max="16" step="1" value="0">
+        <span class="val" id="iab_v">0</span>
+      </div>
+    </div>
+    <div class="stat-readout" id="int_readout"></div>
+  </div>
+
+  <h3>Three-Way ANOVA</h3>
+  <p>Adding a third categorical IV expands the model to <strong>seven distinct components</strong>, each with its own F-test:</p>
+
+  <div class="effects-grid">
+    <div class="effect-card">
+      <div class="etype">Main Effects × 3</div>
+      <div class="ename">A, B, C</div>
+      <div class="edesc">The independent effect of each factor, averaging across all levels of the other two.</div>
+    </div>
+    <div class="effect-card">
+      <div class="etype">Two-Way Interactions × 3</div>
+      <div class="ename">A×B &nbsp; A×C &nbsp; B×C</div>
+      <div class="edesc">Whether the effect of one factor depends on the level of another.</div>
+    </div>
+    <div class="effect-card full">
+      <div class="etype">Three-Way Interaction × 1</div>
+      <div class="ename">A × B × C</div>
+      <div class="edesc">Whether the A×B interaction itself changes across levels of C. Visualize it as: draw the A×B line graph for level C₁, then draw it again for C₂. If those two graphs look different from each other, a three-way interaction is present.</div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ====== 5: EXPERIMENTAL DESIGNS ====== -->
+<section id="designs">
+  <h2><span class="section-num">5</span> Experimental Designs</h2>
+
+  <p>The number of factors tells you <em>how many</em> IVs exist. The experimental design tells you <em>how participants are distributed</em> across those variables — and this fundamentally changes how the error term is calculated.</p>
+
+  <h3>Between-Subjects (Randomized Groups)</h3>
+  <p>Each participant is assigned to <strong>exactly one</strong> condition. Groups are completely independent.</p>
+  <ul class="list-spaced">
+    <li><strong>Error term:</strong> \(MS_\text{Within}\) — contains all individual differences (natural ability, baseline fitness, pain tolerance) plus random noise. The denominator of F is relatively large.</li>
+    <li><strong>Trade-off:</strong> You need a larger treatment effect or bigger sample sizes to achieve significance.</li>
+  </ul>
+
+  <h3>Within-Subjects (Repeated Measures)</h3>
+  <p>The same participants complete <strong>every</strong> condition. Each person serves as their own control.</p>
+
+  <div class="figure-container">
+    <div class="fig-title">Figure 3 — Repeated Measures Design</div>
+    <img src="../assets/images/week3/Repeated_measures_ANOVA.png" alt="Repeated measures ANOVA design diagram">
+  </div>
+
+  <ul class="list-spaced">
+    <li><strong>Statistical advantage:</strong> Individual differences can be mathematically <em>removed</em> from the error term, shrinking the denominator dramatically and boosting statistical power. Smaller samples are required.</li>
+    <li><strong>New assumption — Sphericity:</strong> Because the same people appear in every condition, observations are no longer independent. Sphericity requires that the variances of <em>differences</em> between all condition pairs are equal. Test with <strong>Mauchly's Test</strong>. If violated, apply the <strong>Greenhouse-Geisser correction</strong> to the degrees of freedom.</li>
+  </ul>
+
+  <h3>Mixed Design (Split-Plot ANOVA)</h3>
+  <p>At least one between-subjects factor and at least one within-subjects factor. The model requires <strong>two separate error terms</strong>:</p>
+  <ul class="list-spaced">
+    <li><strong>Between-subjects error:</strong> Tests the between-subjects main effect; still includes individual differences.</li>
+    <li><strong>Within-subjects error:</strong> Tests the within-subjects main effect and the interaction; individual differences removed.</li>
+  </ul>
+
+  <h3>Design Summary</h3>
+  <table class="comparison-table">
+    <thead><tr><th>Design</th><th>Between Factor(s)</th><th>Within Factor(s)</th><th>Example</th></tr></thead>
+    <tbody>
+      <tr><td><strong>One-Way Randomized</strong></td><td>1 (3+ levels)</td><td>None</td><td>Three different exercise programmes, separate groups.</td></tr>
+      <tr><td><strong>One-Way Repeated Measures</strong></td><td>None</td><td>1 (3+ levels)</td><td>Same patients measured at Baseline, Week 4, Week 8.</td></tr>
+      <tr><td><strong>Two-Way Randomized</strong></td><td>2 Factors</td><td>None</td><td>Drug dose × Age group, all independent groups.</td></tr>
+      <tr><td><strong>Two-Way Mixed</strong></td><td>1 Factor</td><td>1 Factor</td><td>Treatment vs. Placebo measured at 3 time points.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="figure-container">
+    <div class="fig-title">Figure 4 — ANOVA Selection Flowchart</div>
+    <img src="../assets/images/week3/ANOVA_test_flowchart.png" alt="ANOVA test selection flowchart">
+  </div>
+
+</section>
+
+<!-- ====== 6: PRACTICE ====== -->
+<section id="practice">
+  <h2><span class="section-num">6</span> Practice: Identify &amp; Choose</h2>
+
+  <p>Work through each scenario below. For each one, identify the number of factors, the experimental design, and the correct ANOVA test. The dependent variable is shown in blue — start there, then identify what is being manipulated and how participants were assigned.</p>
+
+  <div id="quiz-wrap"></div>
+  <div class="score-bar" id="score-bar" style="display:none"></div>
+
+  <div style="margin-top:24px;font-family:var(--sans);font-size:0.85rem;color:var(--text-secondary)">
+    Further reading:
+    <a href="https://numiqo.com/tutorial/anova" style="color:var(--accent)">Numiqo: Online ANOVA Calculator</a> ·
+    <a href="https://stats.libretexts.org/Bookshelves/Applied_Statistics/Natural_Resources_Biometrics_(Kiernan)/05%3A_One-Way_Analysis_of_Variance/5.01%3A_Analysis_of_Variance" style="color:var(--accent)">LibreTexts: Analysis of Variance</a>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <p>Inquiry and Measurement in Biomedical Physiology and Kinesiology</p>
+</footer>
+
+<!-- ===== JAVASCRIPT ===== -->
+<script>
+// KaTeX
+renderMathInElement(document.body, {
+  delimiters: [
+    {left:'$$', right:'$$', display:true},
+    {left:'\\(', right:'\\)', display:false}
+  ]
+});
+
+// ── Shared utilities ──────────────────────────────────────────────────────────
+const DPR = window.devicePixelRatio || 1;
+
+function setupCanvas(el) {
+  const w = +el.getAttribute('width'), h = +el.getAttribute('height');
+  el.width = w * DPR; el.height = h * DPR;
+  el.style.width = w + 'px'; el.style.height = h + 'px';
+  const ctx = el.getContext('2d');
+  ctx.scale(DPR, DPR);
+  return ctx;
+}
+
+function gaussPDF(x, mu, sd) {
+  const z = (x - mu) / sd;
+  return Math.exp(-.5 * z * z) / (sd * Math.sqrt(2 * Math.PI));
+}
+
+function logGamma(z) {
+  const g = 7;
+  const c = [0.99999999999980993,676.5203681218851,-1259.1392167224028,
+    771.32342877765313,-176.61502916214059,12.507343278686905,
+    -0.13857109526572012,9.9843695780195716e-6,1.5056327351493116e-7];
+  if (z < 0.5) return Math.log(Math.PI / Math.sin(Math.PI * z)) - logGamma(1 - z);
+  z -= 1; let x = c[0];
+  for (let i = 1; i < g + 2; i++) x += c[i] / (z + i);
+  const t = z + g + 0.5;
+  return .5 * Math.log(2 * Math.PI) + (z + .5) * Math.log(t) - t + Math.log(x);
+}
+
+function logBeta(a, b) { return logGamma(a) + logGamma(b) - logGamma(a + b); }
+
+function fPDF(x, d1, d2) {
+  if (x <= 0) return 0;
+  return Math.exp(
+    (d1/2)*Math.log(d1) + (d1/2)*Math.log(x) + (d2/2)*Math.log(d2)
+    - ((d1+d2)/2)*Math.log(d1*x+d2) - Math.log(x) - logBeta(d1/2, d2/2)
+  );
+}
+
+function fPValue(fv, d1, d2) {
+  if (fv <= 0) return 1;
+  const steps = 2000, a = 1e-6, b = Math.max(fv, .01);
+  const h = (b - a) / steps;
+  let s = fPDF(a, d1, d2) + fPDF(b, d1, d2);
+  for (let i = 1; i < steps; i++) s += fPDF(a + i*h, d1, d2) * (i%2===0?2:4);
+  return Math.max(0, 1 - Math.min(1, (h/3)*s));
+}
+
+function fmtP(p) {
+  if (p < .001) return 'p < .001';
+  if (p < .01)  return 'p < .01';
+  if (p < .05)  return 'p < .05';
+  return 'p = ' + p.toFixed(3);
+}
+
+// ── F-Ratio Visualizer ────────────────────────────────────────────────────────
+(function() {
+  const cv = document.getElementById('fCanvas');
+  const ctx = setupCanvas(cv);
+  const W = 820, H = 360;
+  const PAD = {t:48, r:30, b:44, l:46};
+  const PW = W - PAD.l - PAD.r, PH = H - PAD.t - PAD.b;
+  const COLS = ['#2563eb','#059669','#d97706'];
+  const LABS = ['Group A','Group B','Group C'];
+  const N = 20, K = 3;
+
+  function draw() {
+    const eff = parseFloat(document.getElementById('fr_eff').value);
+    const sd  = parseFloat(document.getElementById('fr_sd').value);
+    document.getElementById('fr_eff_v').textContent = eff.toFixed(1);
+    document.getElementById('fr_sd_v').textContent  = sd.toFixed(1);
+
+    const means = [50 - eff, 50, 50 + eff];
+    const SS_b  = N * means.reduce((s,m) => s + (m-50)**2, 0);
+    const MS_b  = SS_b / (K-1);
+    const MS_w  = sd * sd;
+    const F     = MS_b / MS_w;
+    const eta2  = SS_b / (SS_b + MS_w * (N*K - K));
+    const p     = fPValue(F, K-1, N*K-K);
+
+    const xMin = 50 - eff - 4*sd, xMax = 50 + eff + 4*sd;
+    const xRng = xMax - xMin;
+    const peak = gaussPDF(50, 50, sd);
+
+    const toX = v => PAD.l + ((v - xMin) / xRng) * PW;
+    const toY = v => PAD.t + PH - (v / peak) * PH * .85;
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Grid
+    ctx.strokeStyle = '#e5e5e5'; ctx.lineWidth = 1;
+    for (let i = 0; i <= 4; i++) {
+      const y = PAD.t + i * PH/4;
+      ctx.beginPath(); ctx.moveTo(PAD.l, y); ctx.lineTo(PAD.l+PW, y); ctx.stroke();
+    }
+
+    // Grand mean
+    ctx.setLineDash([5,4]); ctx.strokeStyle = '#bbb'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(toX(50), PAD.t); ctx.lineTo(toX(50), PAD.t+PH); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#999'; ctx.font = '11px var(--sans)'; ctx.textAlign = 'center';
+    ctx.fillText('Grand Mean', toX(50), PAD.t - 10);
+
+    // Curves
+    means.forEach((mu, i) => {
+      const steps = 400;
+      // Fill
+      ctx.beginPath();
+      for (let s = 0; s <= steps; s++) {
+        const x = xMin + (s/steps)*xRng;
+        const cx = toX(x), cy = toY(gaussPDF(x, mu, sd));
+        s === 0 ? ctx.moveTo(cx, cy) : ctx.lineTo(cx, cy);
+      }
+      ctx.lineTo(toX(xMax), toY(0)); ctx.lineTo(toX(xMin), toY(0)); ctx.closePath();
+      ctx.globalAlpha = .18; ctx.fillStyle = COLS[i]; ctx.fill(); ctx.globalAlpha = 1;
+
+      // Outline
+      ctx.beginPath();
+      for (let s = 0; s <= steps; s++) {
+        const x = xMin + (s/steps)*xRng;
+        const cx = toX(x), cy = toY(gaussPDF(x, mu, sd));
+        s === 0 ? ctx.moveTo(cx, cy) : ctx.lineTo(cx, cy);
+      }
+      ctx.strokeStyle = COLS[i]; ctx.lineWidth = 2.5; ctx.stroke();
+
+      // Mean tick
+      ctx.setLineDash([4,3]); ctx.strokeStyle = COLS[i]; ctx.lineWidth = 1.8;
+      ctx.beginPath(); ctx.moveTo(toX(mu), PAD.t+8); ctx.lineTo(toX(mu), toY(0)); ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Label
+      ctx.fillStyle = COLS[i]; ctx.font = 'bold 12px var(--sans)'; ctx.textAlign = 'center';
+      ctx.fillText(LABS[i], toX(mu), PAD.t + 2);
+    });
+
+    // Axis
+    ctx.strokeStyle = '#ccc'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(PAD.l, PAD.t+PH); ctx.lineTo(PAD.l+PW, PAD.t+PH); ctx.stroke();
+    ctx.fillStyle = '#999'; ctx.font = '11px var(--sans)'; ctx.textAlign = 'center';
+    for (let v = Math.ceil(xMin/5)*5; v <= xMax; v += 5)
+      ctx.fillText(v, toX(v), PAD.t+PH+16);
+
+    // Stats
+    const sig = p < .05;
+    document.getElementById('fr_stats').innerHTML =
+      `<div class="stat"><strong>F(${K-1}, ${N*K-K})</strong> = ${F.toFixed(2)}</div>` +
+      `<div class="stat ${sig?'is-success':'is-danger'}"><strong>${fmtP(p)}</strong></div>` +
+      `<div class="stat"><strong>η²</strong> = ${eta2.toFixed(3)}</div>` +
+      `<div class="stat"><strong>MS<sub>between</sub></strong> = ${MS_b.toFixed(1)}</div>` +
+      `<div class="stat"><strong>MS<sub>within</sub></strong> = ${MS_w.toFixed(1)}</div>`;
+  }
+
+  document.getElementById('fr_eff').addEventListener('input', draw);
+  document.getElementById('fr_sd').addEventListener('input', draw);
+  draw();
+})();
+
+// ── Interaction Explorer ──────────────────────────────────────────────────────
+(function() {
+  const cv = document.getElementById('intCanvas');
+  const ctx = setupCanvas(cv);
+  const W = 820, H = 360;
+  const PAD = {t:40, r:100, b:56, l:64};
+  const PW = W - PAD.l - PAD.r, PH = H - PAD.t - PAD.b;
+  const C1 = '#2563eb', C2 = '#d97706';
+
+  function draw() {
+    const a  = parseInt(document.getElementById('ia').value);
+    const b  = parseInt(document.getElementById('ib').value);
+    const ab = parseInt(document.getElementById('iab').value);
+    document.getElementById('ia_v').textContent  = (a  >= 0 ? '+' : '') + a;
+    document.getElementById('ib_v').textContent  = (b  >= 0 ? '+' : '') + b;
+    document.getElementById('iab_v').textContent = (ab >= 0 ? '+' : '') + ab;
+
+    // Cell means
+    const A1B1 = 50, A2B1 = 50 + a;
+    const A1B2 = 50 + b, A2B2 = 50 + a + b + ab;
+
+    const all  = [A1B1, A2B1, A1B2, A2B2];
+    const yMin = Math.min(...all) - 8, yMax = Math.max(...all) + 8;
+    const yRng = Math.max(yMax - yMin, 1);
+
+    const toX = lvl => PAD.l + (lvl === 0 ? PW*.25 : PW*.75);
+    const toY = v   => PAD.t + PH - ((v - yMin) / yRng) * PH;
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Grid + y labels
+    ctx.strokeStyle = '#e5e5e5'; ctx.lineWidth = 1;
+    for (let i = 0; i <= 4; i++) {
+      const y = PAD.t + (i/4)*PH;
+      ctx.beginPath(); ctx.moveTo(PAD.l, y); ctx.lineTo(PAD.l+PW, y); ctx.stroke();
+      ctx.fillStyle = '#999'; ctx.font = '11px var(--sans)'; ctx.textAlign = 'right';
+      ctx.fillText((yMax - i*yRng/4).toFixed(0), PAD.l - 8, y + 4);
+    }
+
+    function drawLine(y1, y2, col, tag) {
+      const x1 = toX(0), x2 = toX(1), cy1 = toY(y1), cy2 = toY(y2);
+      ctx.strokeStyle = col; ctx.lineWidth = 2.5; ctx.setLineDash([]);
+      ctx.beginPath(); ctx.moveTo(x1, cy1); ctx.lineTo(x2, cy2); ctx.stroke();
+      [[x1, cy1],[x2, cy2]].forEach(([px,py]) => {
+        ctx.fillStyle = col; ctx.beginPath(); ctx.arc(px, py, 6, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(px, py, 3, 0, Math.PI*2); ctx.fill();
+      });
+      ctx.fillStyle = col; ctx.font = 'bold 12px var(--sans)'; ctx.textAlign = 'left';
+      ctx.fillText(tag + ' = ' + y2.toFixed(0), x2+10, cy2+4);
+    }
+
+    drawLine(A1B1, A2B1, C1, 'B₁');
+    drawLine(A1B2, A2B2, C2, 'B₂');
+
+    // Axes + labels
+    ctx.strokeStyle = '#ccc'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(PAD.l, PAD.t+PH); ctx.lineTo(PAD.l+PW, PAD.t+PH); ctx.stroke();
+    ctx.fillStyle = '#555'; ctx.font = '13px var(--sans)'; ctx.textAlign = 'center';
+    ctx.fillText('A₁', toX(0), PAD.t+PH+20);
+    ctx.fillText('A₂', toX(1), PAD.t+PH+20);
+    ctx.fillText('Level of Factor A', PAD.l+PW/2, PAD.t+PH+42);
+    ctx.save(); ctx.translate(18, PAD.t+PH/2); ctx.rotate(-Math.PI/2);
+    ctx.font = '12px var(--sans)'; ctx.fillText('Mean Score', 0, 0); ctx.restore();
+
+    const parallel = ab === 0;
+    document.getElementById('int_readout').innerHTML =
+      `<div class="stat" style="font-family:var(--sans);font-size:.85rem">` +
+      (parallel
+        ? '<span style="color:var(--green);font-weight:700">Lines are parallel</span> — no A×B interaction. The effect of Factor A is identical at both levels of B.'
+        : '<span style="color:var(--orange);font-weight:700">Lines are not parallel</span> — an A×B interaction is present. The effect of Factor A differs depending on the level of B.') +
+      `</div>`;
+  }
+
+  ['ia','ib','iab'].forEach(id => document.getElementById(id).addEventListener('input', draw));
+  draw();
+})();
+
+// ── Quiz ──────────────────────────────────────────────────────────────────────
+(function() {
+  const SCENARIOS = [
+    {
+      num: 1, title: 'Protein Supplements & Strength',
+      text: 'A sports scientist recruits 45 untrained adults and randomly assigns them to three independent groups (n = 15 each): <em>Whey Protein</em>, <em>Casein Protein</em>, or <em>Pea Protein</em>. All participants follow an identical 8-week resistance training programme. Maximal leg-press strength is recorded once at the end.',
+      dv: 'Leg-press strength (kg)',
+      factors: [{ name: 'Supplement Type', levels: ['Whey','Casein','Pea'], type: 'bt' }],
+      nf: 1, design: 'between', answer: 'ow-bt',
+      expl: 'There is <strong>one factor</strong> (Supplement Type) with 3 levels. Each participant belongs to exactly one group — a fully <strong>between-subjects</strong> design. Use a <strong>One-Way ANOVA</strong>. If significant, follow up with Tukey\'s HSD to pinpoint which supplement pairs differ.'
+    },
+    {
+      num: 2, title: 'Temperature & Running Performance',
+      text: 'Twelve trained runners each complete three 5 km time trials on separate days: once in <em>Cold</em> (5 °C), once in <em>Moderate</em> (18 °C), and once in <em>Hot</em> (35 °C) conditions. Trial order is counterbalanced. Finish time is recorded for every trial.',
+      dv: 'Finish time (minutes)',
+      factors: [{ name: 'Temperature Condition', levels: ['Cold','Moderate','Hot'], type: 'wt' }],
+      nf: 1, design: 'within', answer: 'ow-wt',
+      expl: 'There is <strong>one factor</strong> (Temperature) with 3 levels, and the <em>same 12 runners</em> complete every condition — a <strong>within-subjects</strong> design. Individual fitness differences are removed from the error term, boosting power. Use a <strong>One-Way Repeated Measures ANOVA</strong> and verify sphericity with Mauchly\'s test.'
+    },
+    {
+      num: 3, title: 'Exercise Type, Age Group & VO₂max',
+      text: 'Researchers recruit 120 sedentary adults divided into three age bands: <em>Young</em> (20–30 yr), <em>Middle-Aged</em> (40–50 yr), and <em>Older</em> (60–70 yr). Within each band, participants are randomly assigned to either <em>Aerobic Training</em> or <em>Resistance Training</em> for 12 weeks (n = 20 per cell). VO₂max is measured once after training.',
+      dv: 'VO₂max (mL/kg/min)',
+      factors: [
+        { name: 'Exercise Type',  levels: ['Aerobic','Resistance'], type: 'bt' },
+        { name: 'Age Group',      levels: ['Young','Middle-Aged','Older'], type: 'bt' }
+      ],
+      nf: 2, design: 'between', answer: 'tw-bt',
+      expl: 'There are <strong>two factors</strong>: Exercise Type (2 levels) and Age Group (3 levels). Every participant is in exactly one condition — fully <strong>between-subjects</strong>. Use a <strong>Two-Way ANOVA (2 × 3 Randomized Groups)</strong>. The interaction tests whether the aerobic vs. resistance benefit differs across age groups.'
+    },
+    {
+      num: 4, title: 'Drug Treatment & Pain Over Time',
+      text: '40 patients with chronic lower back pain are randomly assigned to either a new analgesic drug (n = 20) or a placebo (n = 20). Pain intensity (0–10 NRS scale) is measured at three time points: <em>Baseline</em>, <em>Week 4</em>, and <em>Week 8</em>. Every patient contributes a score at all three time points.',
+      dv: 'Pain intensity score (0–10)',
+      factors: [
+        { name: 'Treatment Group', levels: ['Drug','Placebo'],               type: 'bt' },
+        { name: 'Time',            levels: ['Baseline','Week 4','Week 8'],   type: 'wt' }
+      ],
+      nf: 2, design: 'mixed', answer: 'tw-mx',
+      expl: 'There are <strong>two factors</strong>: Treatment Group (<strong>between-subjects</strong> — each patient receives only one treatment) and Time (<strong>within-subjects</strong> — every patient is measured at all three points). Use a <strong>Two-Way Mixed ANOVA (Split-Plot)</strong>. The key question is the Group × Time interaction: does pain decline faster in the drug group than in the placebo group?'
+    },
+    {
+      num: 5, title: 'Caffeine, Task Complexity & Reaction Time',
+      text: 'Researchers study how <em>caffeine dose</em> (None, Low, High), <em>task complexity</em> (Simple, Complex), and <em>time of day</em> (Morning, Evening) affect reaction time. 120 participants are randomly assigned to exactly one of the 12 condition combinations (n = 10 per cell). Reaction time is measured once per participant.',
+      dv: 'Reaction time (ms)',
+      factors: [
+        { name: 'Caffeine Dose',    levels: ['None','Low','High'],       type: 'bt' },
+        { name: 'Task Complexity',  levels: ['Simple','Complex'],        type: 'bt' },
+        { name: 'Time of Day',      levels: ['Morning','Evening'],       type: 'bt' }
+      ],
+      nf: 3, design: 'between', answer: 'three',
+      expl: 'There are <strong>three factors</strong> (Caffeine × Complexity × Time of Day), all between-subjects. Use a <strong>Three-Way ANOVA (3 × 2 × 2)</strong>. This yields 7 F-tests: 3 main effects, 3 two-way interactions, and 1 three-way interaction. The three-way interaction asks: does the caffeine × complexity interaction differ between morning and evening sessions?'
+    }
+  ];
+
+  const NF_OPTS = [
+    {id:'1', label:'1 Factor'},
+    {id:'2', label:'2 Factors'},
+    {id:'3', label:'3 Factors'}
+  ];
+  const DES_OPTS = [
+    {id:'between', label:'Between-Subjects (different people per condition)'},
+    {id:'within',  label:'Within-Subjects (same people in all conditions)'},
+    {id:'mixed',   label:'Mixed (one of each)'}
+  ];
+  const TEST_OPTS = [
+    {id:'ow-bt',  label:'One-Way ANOVA (Between-Subjects)'},
+    {id:'ow-wt',  label:'One-Way Repeated Measures ANOVA'},
+    {id:'tw-bt',  label:'Two-Way ANOVA (Between-Subjects)'},
+    {id:'tw-mx',  label:'Two-Way Mixed ANOVA (Split-Plot)'},
+    {id:'three',  label:'Three-Way ANOVA'}
+  ];
+
+  // State: per scenario, track each question
+  const ST = SCENARIOS.map(() => ({q1:null,q1d:false, q2:null,q2d:false, q3:null,q3d:false}));
+
+  function buildCard(sc, idx) {
+    const card = document.createElement('div');
+    card.className = 'scenario-card';
+
+    card.innerHTML = `
+      <div class="sc-header">
+        <span class="sc-num">Scenario ${sc.num}</span>
+        <span class="sc-title">${sc.title}</span>
+      </div>
+      <p class="sc-text">${sc.text}</p>
+      <div><span class="dv-pill">📊 Dependent Variable: ${sc.dv}</span></div>
+
+      <div class="quiz-step" id="q1s-${idx}">
+        <div class="qs-label">Question 1 of 3</div>
+        <div class="qs-q">How many independent factors (IVs) are manipulated in this study?</div>
+        <div class="choice-grid" id="q1g-${idx}"></div>
+        <div class="qfb" id="q1f-${idx}"></div>
+      </div>
+
+      <div class="quiz-step step-locked" id="q2s-${idx}">
+        <div class="qs-label">Question 2 of 3</div>
+        <div class="qs-q">How are participants assigned to conditions?</div>
+        <div class="choice-grid" id="q2g-${idx}"></div>
+        <div class="qfb" id="q2f-${idx}"></div>
+      </div>
+
+      <div class="quiz-step step-locked" id="q3s-${idx}">
+        <div class="qs-label">Question 3 of 3</div>
+        <div class="qs-q">Which ANOVA test should you use?</div>
+        <div class="choice-grid" id="q3g-${idx}"></div>
+        <div class="qfb" id="q3f-${idx}"></div>
+      </div>
+
+      <div class="breakdown" id="bd-${idx}"></div>
+    `;
+
+    return card;
+  }
+
+  function makeChoices(gridId, opts, correctId, st, sfx, unlock, fbId, onDone) {
+    const grid = document.getElementById(gridId);
+    opts.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'cbtn';
+      btn.textContent = opt.label;
+      btn.dataset.id = opt.id;
+      btn.addEventListener('click', () => {
+        if (st.done) return;
+        st.done = true; st.val = opt.id;
+        const ok = opt.id === correctId;
+        const fb = document.getElementById(fbId);
+
+        grid.querySelectorAll('.cbtn').forEach(b => {
+          b.disabled = true;
+          if (b.dataset.id === opt.id) b.classList.add(ok ? 'ok' : 'bad');
+          if (!ok && b.dataset.id === correctId) b.classList.add('reveal');
+        });
+
+        fb.classList.add('show', ok ? 'ok' : 'bad');
+        fb.textContent = ok ? '✓ Correct!' : '✗ Not quite — the correct answer is highlighted above.';
+
+        onDone(ok);
+
+        if (unlock) setTimeout(() => {
+          const el = document.getElementById(unlock);
+          el && el.classList.remove('step-locked');
+          el && el.scrollIntoView({behavior:'smooth', block:'nearest'});
+        }, 500);
+      });
+      grid.appendChild(btn);
+    });
+  }
+
+  function showBreakdown(sc, idx, expl, q3ok) {
+    const rows = sc.factors.map(f => {
+      const lvls = f.levels.map(l => `<span class="ltag ${f.type}">${l}</span>`).join('');
+      const badge = f.type === 'wt'
+        ? '<span class="ltag wt" style="font-size:.7rem">Within-Subjects</span>'
+        : '<span class="ltag bt" style="font-size:.7rem">Between-Subjects</span>';
+      return `<tr><td>${f.name} ${badge}</td><td>${f.levels.length}</td><td>${lvls}</td></tr>`;
+    }).join('');
+
+    const fb = document.getElementById(`q3f-${idx}`);
+    fb.innerHTML = (q3ok ? '✓ Correct! ' : '✗ Not quite — ') + expl;
+
+    document.getElementById(`bd-${idx}`).innerHTML = `
+      <table>
+        <thead><tr><th>Factor (IV)</th><th>Levels</th><th>Level Names</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    `;
+    document.getElementById(`bd-${idx}`).classList.add('show');
+  }
+
+  function updateScore() {
+    let done = 0, correct = 0;
+    ST.forEach((st, i) => {
+      if (st.q3d) { done++; if (st.q3 === SCENARIOS[i].answer) correct++; }
+    });
+    const el = document.getElementById('score-bar');
+    if (!done) { el.style.display='none'; return; }
+    el.style.display = 'block';
+    el.innerHTML = `ANOVA Selection Score: <span style="color:var(--accent)">${correct} / ${done}</span> correct &nbsp;(${done} of ${SCENARIOS.length} scenarios attempted)`;
+  }
+
+  const wrap = document.getElementById('quiz-wrap');
+  SCENARIOS.forEach((sc, idx) => {
+    const card = buildCard(sc, idx);
+    wrap.appendChild(card);
+
+    const st1 = {done:false, val:null};
+    const st2 = {done:false, val:null};
+    const st3 = {done:false, val:null};
+
+    makeChoices(`q1g-${idx}`, NF_OPTS, String(sc.nf), st1, idx, `q2s-${idx}`, `q1f-${idx}`, ok => {});
+    makeChoices(`q2g-${idx}`, DES_OPTS, sc.design, st2, idx, `q3s-${idx}`, `q2f-${idx}`, ok => {});
+    makeChoices(`q3g-${idx}`, TEST_OPTS, sc.answer, st3, idx, null, `q3f-${idx}`, ok => {
+      ST[idx].q3 = st3.val; ST[idx].q3d = true;
+      setTimeout(() => {
+        showBreakdown(sc, idx, sc.expl, ok);
+        updateScore();
+      }, 350);
+    });
+  });
+})();
+</script>
+</body>
+</html>
