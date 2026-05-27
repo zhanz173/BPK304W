@@ -9,6 +9,15 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    };
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
 <link rel="stylesheet" href="../css/base.css">
 <link rel="stylesheet" href="../css/chapter.css">
 <style>
@@ -168,7 +177,8 @@
 <header class="hero">
   <div class="byline">Week 3 · Inferential Statistics</div>
   <h1>Analysis of Variance (ANOVA)</h1>
-  <p class="subtitle">When comparing three or more group means, ANOVA tests whether at least one mean differs — in a single step that keeps the Type I error rate under control.</p>
+  <p class="subtitle">When our designs expand beyond two groups, running a cascade of individual $t$-tests becomes statistically invalid.
+     This is where the Analysis of Variance (ANOVA) becomes essential.</p>
 </header>
 
 <!-- TOC -->
@@ -191,11 +201,20 @@
 <section id="why-anova">
   <h2><span class="section-num">1</span> Why Not Multiple T-Tests?</h2>
 
-  <p>The independent-samples \(t\)-test compares exactly two group means. When a study has three or more groups, researchers are tempted to simply run one \(t\)-test per pair. This approach is statistically invalid.</p>
+  <p>The primary reason we cannot simply perform multiple pairwise $t$-tests to compare three or more groups comes down to a fundamental concept in probability: <strong>Type I Error Accumulation</strong>.</p>
 
   <h3>The Family-Wise Error Problem</h3>
-  <p>Every hypothesis test carries an \(\alpha\) (typically \(0.05\)) — the probability of a <strong>Type I Error</strong>: rejecting a true null hypothesis by chance. Running multiple tests compounds this risk. The probability of at least one false positive across \(c\) independent comparisons is:</p>
+  <p>Every hypothesis test carries an \(\alpha\) (typically \(0.05\)) — the probability of a <strong>Type I Error</strong>: rejecting a true null hypothesis by chance. </p>
+  
+  <details>
+  <summary>Type I Error Rate \(\alpha\)</summary>
+    A Type I error occurs when the null hypothesis (\(H_0\)) is true, but is incorrectly rejected. It represents a false positive result, where a statistical test detects an effect or relationship that does not actually exist in the population.
+    The probability of committing a Type I error is denoted by the significance level \(\alpha\).
+  </details>
 
+  <br>
+  <p>Running multiple independent t-tests compounds this risk. The probability of at least one false positive across \(c\) independent comparisons is:</p>
+  
   <div class="math-block">
     $$\text{Family-Wise Error Rate} = 1 - (1-\alpha)^c$$
   </div>
@@ -212,8 +231,8 @@
     </tbody>
   </table>
 
-  <h3>The ANOVA Solution: One Omnibus Test</h3>
-  <p>ANOVA evaluates all groups <em>simultaneously</em> in a single test — the word <strong>omnibus</strong> ("all-inclusive") captures this. The global Type I error rate stays locked at exactly \(\alpha\) regardless of how many groups are involved.</p>
+  <h3>The ANOVA Solution</h3>
+  <p>ANOVA evaluates all groups <em>simultaneously</em> in a single test. The global Type I error rate stays locked at exactly \(\alpha\) regardless of how many groups are involved.</p>
 
   <div class="callout intuition">
     <div class="callout-label">💡 Analogy</div>
@@ -231,6 +250,17 @@
     $$SS_{\text{Total}} = \underbrace{SS_{\text{Between}}}_{\text{Signal — treatment effect}} + \underbrace{SS_{\text{Within}}}_{\text{Noise — random error}}$$
   </div>
 
+  <p> To see why it's possible to compare mean by analyzing variance, recall the concept of the Law of Total Variance. The partitioning of variance in ANOVA is actually a direct application of the principle:</p>
+  
+  <details>
+  <summary>Law of Total Variance</summary>
+    Total variance of a random variable \(Y\) can be broken down into two distinct parts based on its relationship with another random variable \(X\). In other word, we ask how much variance in \(Y\) can be explained by \(X\). 
+    $$ Var(Y) =  \underbrace{E[Var(Y|X)]}_{\text{random flatuation (noise)}} + 
+    \underbrace{Var(E[Y|X])}_{\text{ difference in mean (signal)} } $$
+    If all the variance can be explained by \(Y\), that is \(var(Y) \approx E[Var(Y|X)] \), we coclude the difference in mean is negligible \(Var(E[Y|X]) \approx 0\).
+  </details>
+
+  <br>
   <ul class="list-spaced">
     <li><strong>Between-Group Variance (Signal):</strong> How far do the group means deviate from the grand mean? Large when the treatment has a strong effect.</li>
     <li><strong>Within-Group Variance (Noise):</strong> How much do individuals vary <em>inside</em> their own group? This exists regardless of any treatment and captures biological differences, measurement error, and random fluctuation.</li>
@@ -254,8 +284,8 @@
 
   <h3>The F-Distribution</h3>
   <p>Unlike the symmetric \(t\)-distribution, the F-distribution is <strong>strictly positive</strong> (variance ratios can't be negative) and <strong>right-skewed</strong> — most random F-ratios cluster near 1, but large values occur by chance with decreasing probability. Its shape is governed by two degrees of freedom: \(df_1 = k-1\) (numerator) and \(df_2 = N-k\) (denominator).</p>
-
-  <h3>Interactive F-Ratio Explorer</h3>
+  <p>Thus an \(F\)-distribution is always specified using a pair of degrees of freedom: \(F(df_{\text{numerator}}, df_{\text{denominator}})\) </p>
+  <h3>F-Ratio Explorer</h3>
   <p>Adjust the sliders to change how spread apart the group means are (signal) and how much individuals vary within groups (noise). Watch the F-value and p-value respond.</p>
 
   <div class="figure-container">
@@ -295,11 +325,11 @@
 
   <div class="callout warning">
     <div class="callout-label">⚠ Important Nuance</div>
-    The alternative hypothesis does <em>not</em> claim every group differs from every other. It only says the blanket equality of \(H_0\) is broken somewhere. A significant ANOVA is a global alarm: it tells you a discrepancy exists, but not <em>where</em>. Identifying which pairs differ requires a post-hoc test.
+    The alternative hypothesis does <em>not</em> claim every group differs from every other. It only says the blanket equality of \(H_0\) is broken somewhere. A significant ANOVA is a global result: it tells you a discrepancy exists, but not <em>where</em>. Identifying which pairs differ requires a post-hoc test.
   </div>
 
   <h3>Post-Hoc Tests</h3>
-  <p>When \(p < \alpha\), use <strong>Tukey's Honestly Significant Difference (HSD)</strong> to compare all possible pairs while controlling the family-wise error rate. Run post-hoc tests only if — and only if — the omnibus ANOVA is significant.</p>
+  <p>When \(p < \alpha\), use <strong>Tukey's Honestly Significant Difference (HSD)</strong> to compare all possible pairs while controlling the family-wise error rate. Run post-hoc tests only if — and only if — the ANOVA is significant.</p>
 
   <h3>Core Assumptions</h3>
   <div class="step-flow">
@@ -311,7 +341,7 @@
     <div class="step">
       <div class="step-num">2</div>
       <div class="step-title">Normality</div>
-      <div class="step-desc">Scores within each group should be approximately normally distributed. ANOVA is robust to mild violations when \(n > 20\) per group (Central Limit Theorem).</div>
+      <div class="step-desc">Scores within each group should be approximately normally distributed. ANOVA is robust to mild violations when \(n > 30\) per group (Central Limit Theorem).</div>
     </div>
     <div class="step">
       <div class="step-num">3</div>
@@ -423,6 +453,65 @@
       </div>
     </div>
     <div class="stat-readout" id="int_readout"></div>
+  </div>
+
+  <h3>Interpreting Results: Interaction First</h3>
+  <p>When you receive Two-Way ANOVA output, the order in which you read the F-tests matters. The correct sequence is:</p>
+
+  <div class="step-flow">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-title">Check the interaction</div>
+      <div class="step-desc">Look at the A × B F-test first. Is it significant (\(p < \alpha\))?</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2a</div>
+      <div class="step-title">If interaction IS significant</div>
+      <div class="step-desc">Stop reading main effects — they are potentially misleading. Interpret the interaction directly using cell means or an interaction plot.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2b</div>
+      <div class="step-title">If interaction is NOT significant</div>
+      <div class="step-desc">Proceed to main effects. Interpret each factor's F-test independently and in plain language.</div>
+    </div>
+  </div>
+
+  <h3>Why Main Effects Can Mislead</h3>
+  <p>A main effect averages over all levels of the other factor. When an interaction exists, that average hides the fact that the effect reverses or disappears in certain conditions.</p>
+
+  <div class="callout warning">
+    <div class="callout-label">⚠ Example: Masking</div>
+    Suppose a drug reduces pain in <em>younger</em> adults but <em>increases</em> it in <em>older</em> adults. Averaged across both age groups, the drug shows <em>no</em> main effect on pain — masking a clinically critical difference. The interaction tells the real story.
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-label">⚠ Example: Magnification</div>
+    If a training programme is strongly effective for <em>beginners</em> but only mildly effective for <em>athletes</em>, the main effect of training is <em>positive but smaller than it appears for beginners</em>. Reporting only the main effect overstates the benefit for athletes.
+  </div>
+
+  <h3>Follow-Up: Simple Main Effects</h3>
+  <p>When an interaction is significant, replace main-effect tests with <strong>simple main effects</strong>: examine the effect of one factor separately at each level of the other factor.</p>
+
+  <table class="comparison-table">
+    <thead><tr><th>Interaction significant?</th><th>Next step</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>No</strong></td>
+        <td>Interpret main effect of A; interpret main effect of B</td>
+        <td>Averaging across levels is valid — the effect is consistent everywhere</td>
+      </tr>
+      <tr>
+        <td><strong>Yes</strong></td>
+        <td>Test simple main effects (effect of A <em>at each level of B</em>, and vice versa)</td>
+        <td>The averaged main effect may be inflated, deflated, or zero — it cannot be trusted alone</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout intuition">
+    <div class="callout-label">💡 Rule of Thumb</div>
+    A significant interaction is a <em>warning sign</em> on both main effects. You must break down the analysis into simple main effects to understand the true pattern.
+     Never report the significance of main effects without first checking the interaction.
   </div>
 
   <h3>Three-Way ANOVA</h3>
@@ -611,7 +700,7 @@ function fmtP(p) {
     const eta2  = SS_b / (SS_b + MS_w * (N*K - K));
     const p     = fPValue(F, K-1, N*K-K);
 
-    const xMin = 50 - eff - 4*sd, xMax = 50 + eff + 4*sd;
+    const xMin = 5, xMax = 95;
     const xRng = xMax - xMin;
     const peak = gaussPDF(50, 50, sd);
 
@@ -670,7 +759,7 @@ function fmtP(p) {
     ctx.strokeStyle = '#ccc'; ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(PAD.l, PAD.t+PH); ctx.lineTo(PAD.l+PW, PAD.t+PH); ctx.stroke();
     ctx.fillStyle = '#999'; ctx.font = '11px var(--sans)'; ctx.textAlign = 'center';
-    for (let v = Math.ceil(xMin/5)*5; v <= xMax; v += 5)
+    for (let v = 10; v <= 90; v += 10)
       ctx.fillText(v, toX(v), PAD.t+PH+16);
 
     // Stats
