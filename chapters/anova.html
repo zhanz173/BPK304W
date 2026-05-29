@@ -257,7 +257,7 @@
     Total variance of a random variable \(Y\) can be broken down into two distinct parts based on its relationship with another random variable \(X\). In other word, we ask how much variance in \(Y\) can be explained by \(X\). 
     $$ Var(Y) =  \underbrace{E[Var(Y|X)]}_{\text{random flatuation (noise)}} + 
     \underbrace{Var(E[Y|X])}_{\text{ difference in mean (signal)} } $$
-    If all the variance can be explained by \(Y\), that is \(var(Y) \approx E[Var(Y|X)] \), we coclude the difference in mean is negligible \(Var(E[Y|X]) \approx 0\).
+    If all the variance can be explained by \(Y\), that is \(Var(Y) \approx E[Var(Y|X)] \), we coclude the difference in mean is negligible \(Var(E[Y|X]) \approx 0\).
   </details>
 
   <br>
@@ -508,6 +508,35 @@
     </tbody>
   </table>
 
+  <h3>Example: Simple Main Effects Analysis</h3>
+  <p>A researcher tests whether a <strong>protein supplement</strong> (Placebo vs. Protein) affects strength gain differently depending on <strong>training status</strong> (Novice vs. Experienced). 80 participants are randomly assigned to one of four cells (n = 20 each). However, the Two-Way ANOVA returns a <strong>significant interaction</strong>, \(F(1, 76) = 9.42,\ p = .003\).</p>
+  <p>Because the interaction is significant, we do <em>not</em> reject null hypothesis even though \(p = 0.03 < 0.05\). Instead, we test <strong>simple main effects</strong> — the effect of Supplement separately within each Experience level, and the effect of Experience separately within each Supplement condition.</p>
+
+  <table class="comparison-table" style="max-width:480px;margin:20px 0;">
+    <thead>
+      <tr><th></th><th style="text-align:center">Novice</th><th style="text-align:center">Experienced</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Placebo</strong></td><td style="text-align:center">4 kg</td><td style="text-align:center">3 kg</td></tr>
+      <tr><td><strong>Protein</strong></td><td style="text-align:center">12 kg</td><td style="text-align:center">5 kg</td></tr>
+    </tbody>
+  </table>
+
+  <div class="figure-container">
+    <div class="fig-title">Figure — Simple Main Effects Explorer &nbsp;(2 × 2 Design)</div>
+    <div class="tab-row" id="sme-tabs">
+      <button class="tab-btn active" data-sme="all">Full 2×2</button>
+      <button class="tab-btn" data-sme="a-at-b1">Supplement effect | Novice</button>
+      <button class="tab-btn" data-sme="a-at-b2">Supplement effect | Experienced</button>
+      <button class="tab-btn" data-sme="b-at-a1">Experience effect | Placebo</button>
+      <button class="tab-btn" data-sme="b-at-a2">Experience effect | Protein</button>
+    </div>
+    <canvas id="smeCanvas" width="820" height="300"></canvas>
+    <div class="stat-readout" id="sme-readout" style="margin-top:10px"></div>
+  </div>
+
+  <p>The averaged main effect of Supplement reports <strong>+5 kg</strong> — but this conceals that the benefit is <strong>+8 kg for novices</strong> and only <strong>+2 kg for experienced athletes</strong>. Reporting the main effect alone overstates the supplement's value for experienced athletes and understates it for beginners.</p>
+
   <div class="callout intuition">
     <div class="callout-label">💡 Rule of Thumb</div>
     A significant interaction is a <em>warning sign</em> on both main effects. You must break down the analysis into simple main effects to understand the true pattern.
@@ -607,7 +636,7 @@
 </main>
 
 <footer>
-  <p>Inquiry and Measurement in Biomedical Physiology and Kinesiology</p>
+  <p>Inquiry and Measurement</p>
 </footer>
 
 <!-- ===== JAVASCRIPT ===== -->
@@ -1054,6 +1083,170 @@ function fmtP(p) {
       }, 350);
     });
   });
+})();
+
+// ── Simple Main Effects Explorer ────────────────────────────────────────────
+(function() {
+  const cv = document.getElementById('smeCanvas');
+  if (!cv) return;
+  const ctx = setupCanvas(cv);
+  const W = 820, H = 300;
+  const PAD = {t:48, r:40, b:60, l:60};
+  const PW = W - PAD.l - PAD.r;
+  const PH = H - PAD.t - PAD.b;
+
+  const VALS = {a1b1:4, a2b1:12, a1b2:3, a2b2:5};
+  const C_PLAC = '#6b7280', C_PROT = '#2563eb';
+  const LABS_A = {a1:'Placebo', a2:'Protein'};
+  const LABS_B = {b1:'Novice', b2:'Experienced'};
+  const KEYS   = {b1:{a1:'a1b1', a2:'a2b1'}, b2:{a1:'a1b2', a2:'a2b2'}};
+  const COLS   = {a1:C_PLAC, a2:C_PROT};
+
+  const BAR_W = 72, GAP = 16;
+  const GC   = [PAD.l + PW*0.25, PAD.l + PW*0.75];
+  const BOFF = [-(BAR_W + GAP/2), GAP/2];
+  // pre-compute bar centre x for each cell
+  const BCX = {
+    a1b1: GC[0]+BOFF[0]+BAR_W/2,  a2b1: GC[0]+BOFF[1]+BAR_W/2,
+    a1b2: GC[1]+BOFF[0]+BAR_W/2,  a2b2: GC[1]+BOFF[1]+BAR_W/2
+  };
+
+  // ann.k = [k1, k2] such that diff = VALS[k2]-VALS[k1] is positive (Novice > Experienced)
+  const CFG = {
+    all: {
+      hl: ['a1b1','a2b1','a1b2','a2b2'], ann: null,
+      txt: 'Full 2×2 design. Main effect of Supplement (averaged): (12+5)/2 − (4+3)/2 = <strong>+5 kg</strong>. This average conceals the interaction — select a tab to isolate each simple main effect.'
+    },
+    'a-at-b1': {
+      hl: ['a1b1','a2b1'], ann: {k:['a1b1','a2b1'], cross:false},
+      txt: '<strong>Supplement effect | Novice:</strong> Protein (12 kg) − Placebo (4 kg) = <strong style="color:#dc2626">+8 kg</strong>. A large gain for novice athletes.'
+    },
+    'a-at-b2': {
+      hl: ['a1b2','a2b2'], ann: {k:['a1b2','a2b2'], cross:false},
+      txt: '<strong>Supplement effect | Experienced:</strong> Protein (5 kg) − Placebo (3 kg) = <strong style="color:#dc2626">+2 kg</strong>. A modest effect for experienced athletes.'
+    },
+    'b-at-a1': {
+      hl: ['a1b1','a1b2'], ann: {k:['a1b2','a1b1'], cross:true},
+      txt: '<strong>Experience effect | Placebo:</strong> Novice (4 kg) − Experienced (3 kg) = <strong style="color:#dc2626">+1 kg</strong>. Without supplementation, training status has minimal impact on gains.'
+    },
+    'b-at-a2': {
+      hl: ['a2b1','a2b2'], ann: {k:['a2b2','a2b1'], cross:true},
+      txt: '<strong>Experience effect | Protein:</strong> Novice (12 kg) − Experienced (5 kg) = <strong style="color:#dc2626">+7 kg</strong>. Under protein supplementation, novices benefit dramatically more.'
+    }
+  };
+
+  let cur = 'all';
+  const yMAX = 15;
+  const toY = v => PAD.t + PH - (v / yMAX) * PH;
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const cfg = CFG[cur];
+
+    // Grid
+    ctx.strokeStyle = '#e5e5e5'; ctx.lineWidth = 1;
+    [0, 5, 10, 15].forEach(v => {
+      const y = toY(v);
+      ctx.beginPath(); ctx.moveTo(PAD.l, y); ctx.lineTo(PAD.l+PW, y); ctx.stroke();
+      ctx.fillStyle = '#aaa'; ctx.font = '11px var(--sans)'; ctx.textAlign = 'right';
+      ctx.fillText(v, PAD.l - 8, y + 4);
+    });
+
+    // y-axis label
+    ctx.save(); ctx.translate(18, PAD.t+PH/2); ctx.rotate(-Math.PI/2);
+    ctx.fillStyle = '#555'; ctx.font = '12px var(--sans)'; ctx.textAlign = 'center';
+    ctx.fillText('Strength Gain (kg)', 0, 0); ctx.restore();
+
+    // Bars, value labels, treatment labels
+    ['b1','b2'].forEach((grp, gi) => {
+      ['a1','a2'].forEach((treat, ti) => {
+        const k  = KEYS[grp][treat];
+        const hl = cfg.hl.includes(k);
+        const v  = VALS[k];
+        const bx = GC[gi] + BOFF[ti];
+        const top = toY(v), btm = toY(0), bh = btm - top;
+
+        ctx.globalAlpha = hl ? 1 : 0.18;
+        ctx.fillStyle = COLS[treat];
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(bx, top, BAR_W, bh, [4,4,0,0]);
+        else ctx.rect(bx, top, BAR_W, bh);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+
+        ctx.fillStyle = hl ? COLS[treat] : '#ccc';
+        ctx.font = 'bold 13px var(--sans)'; ctx.textAlign = 'center';
+        ctx.fillText(v + ' kg', bx + BAR_W/2, top - 7);
+
+        ctx.fillStyle = hl ? '#444' : '#ccc';
+        ctx.font = '11px var(--sans)'; ctx.textAlign = 'center';
+        ctx.fillText(LABS_A[treat], bx + BAR_W/2, toY(0) + 16);
+      });
+
+      // Group label (Factor B level)
+      ctx.fillStyle = '#222'; ctx.font = 'bold 13px var(--sans)'; ctx.textAlign = 'center';
+      ctx.fillText(LABS_B[grp], GC[gi], toY(0) + 36);
+    });
+
+    // x-axis
+    ctx.strokeStyle = '#ccc'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(PAD.l, toY(0)); ctx.lineTo(PAD.l+PW, toY(0)); ctx.stroke();
+
+    // Bracket / connector annotation
+    if (cfg.ann) {
+      const [k1, k2] = cfg.ann.k;
+      const x1 = BCX[k1], x2 = BCX[k2];
+      const y1 = toY(VALS[k1]) - 4, y2 = toY(VALS[k2]) - 4;
+      const diff = VALS[k2] - VALS[k1];
+      const sign = diff >= 0 ? '+' : '';
+      ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 1.5;
+
+      if (!cfg.ann.cross) {
+        // Within-group: upside-down U bracket
+        ctx.setLineDash([]);
+        const brY = Math.min(y1, y2) - 22;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1); ctx.lineTo(x1, brY);
+        ctx.lineTo(x2, brY); ctx.lineTo(x2, y2);
+        ctx.stroke();
+        ctx.fillStyle = '#dc2626'; ctx.font = 'bold 12px var(--sans)'; ctx.textAlign = 'center';
+        ctx.fillText(sign + diff + ' kg', (x1+x2)/2, brY - 7);
+      } else {
+        // Cross-group: dashed connecting line with chip label at midpoint
+        ctx.setLineDash([5, 4]);
+        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+        ctx.setLineDash([]);
+        const mx = (x1+x2)/2, my = (y1+y2)/2;
+        ctx.fillStyle = 'rgba(255,255,255,0.88)';
+        ctx.fillRect(mx - 32, my - 11, 64, 22);
+        ctx.fillStyle = '#dc2626'; ctx.font = 'bold 12px var(--sans)'; ctx.textAlign = 'center';
+        ctx.fillText(sign + diff + ' kg', mx, my + 5);
+      }
+    }
+
+    // Legend (top-centre)
+    const legItems = [[C_PLAC,'Placebo'],[C_PROT,'Protein']];
+    const legStartX = PAD.l + PW/2 - 90;
+    legItems.forEach(([col, lab], i) => {
+      const lx = legStartX + i*90;
+      ctx.fillStyle = col; ctx.fillRect(lx, PAD.t - 28, 12, 12);
+      ctx.fillStyle = '#333'; ctx.font = '12px var(--sans)'; ctx.textAlign = 'left';
+      ctx.fillText(lab, lx + 16, PAD.t - 18);
+    });
+
+    document.getElementById('sme-readout').innerHTML =
+      `<div class="stat" style="font-family:var(--sans);font-size:.88rem;line-height:1.6">${cfg.txt}</div>`;
+  }
+
+  document.querySelectorAll('#sme-tabs .tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#sme-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      cur = btn.dataset.sme;
+      draw();
+    });
+  });
+  draw();
 })();
 </script>
 </body>
