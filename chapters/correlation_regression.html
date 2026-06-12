@@ -1,0 +1,814 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Correlation &amp; Regression - Week 4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,300;1,8..60,400&family=JetBrains+Mono:wght@400;500&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/chapter.css">
+<style>
+.r-badge {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: var(--accent-light);
+  color: var(--accent-dark);
+  margin: 0 2px;
+}
+.pitfall-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin: 24px 0;
+}
+.pitfall-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.pitfall-card img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-bottom: 1px solid var(--border);
+}
+.pitfall-body {
+  padding: 14px 16px;
+}
+.pitfall-label {
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--orange);
+  margin-bottom: 4px;
+}
+.pitfall-title {
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-bottom: 6px;
+}
+.pitfall-desc {
+  font-size: 0.83rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+.line-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 20px 0;
+}
+.line-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.line-letter {
+  font-family: var(--sans);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1;
+  min-width: 24px;
+}
+.line-title {
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 0.92rem;
+  margin-bottom: 4px;
+}
+.line-desc {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+.var-bar {
+  display: flex;
+  height: 44px;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 20px 0 8px;
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.var-bar-seg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+.metrics-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 24px 0;
+  font-family: var(--sans);
+  font-size: 0.84rem;
+}
+.metrics-table th {
+  background: var(--accent);
+  color: #fff;
+  padding: 9px 14px;
+  text-align: left;
+  font-weight: 600;
+}
+.metrics-table th:first-child { border-radius: 8px 0 0 0; }
+.metrics-table th:last-child  { border-radius: 0 8px 0 0; }
+.metrics-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.metrics-table tr:nth-child(even) td { background: var(--sidenote-bg); }
+.demo-cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(260px, 0.85fr);
+  gap: 24px;
+  align-items: start;
+  margin-top: 16px;
+}
+.demo-right {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.readout-box,
+.check-card {
+  background: var(--sidenote-bg);
+  border-radius: 8px;
+  padding: 14px 16px;
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  line-height: 1.7;
+}
+.check-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+}
+.check-card strong {
+  color: var(--accent-dark);
+}
+.demo-canvas-wrap {
+  overflow-x: auto;
+}
+.sse-meter {
+  height: 16px;
+  background: var(--sidenote-bg);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+.sse-meter-fill {
+  height: 100%;
+  width: 50%;
+  background: var(--orange);
+  transition: width 0.2s ease;
+}
+.loss-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin-top: 10px;
+  font-family: var(--sans);
+  font-size: 0.82rem;
+}
+.legend-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.legend-swatch {
+  width: 18px;
+  height: 3px;
+  border-radius: 3px;
+}
+.control-group select {
+  min-width: 150px;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--card-bg);
+  color: var(--text);
+  font-family: var(--sans);
+}
+@media (max-width: 680px) {
+  .pitfall-grid, .line-grid, .demo-cols, .loss-cmp-grid { grid-template-columns: 1fr; }
+}
+/* ── Section 8: Robust Loss Functions ── */
+.adv-banner {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--sans);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  padding: 5px 14px;
+  border-radius: 20px;
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+  margin-bottom: 18px;
+}
+.loss-cmp-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 20px 0;
+}
+.loss-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+.loss-card .lc-badge {
+  display: inline-block;
+  font-family: var(--sans);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-bottom: 6px;
+}
+.lc-l2  { background: #dbeafe; color: #1e40af; }
+.lc-l1  { background: #fef3c7; color: #92400e; }
+.lc-hub { background: #d1fae5; color: #065f46; }
+.loss-card .lc-name { font-family: var(--sans); font-weight: 700; font-size: 0.95rem; margin-bottom: 4px; }
+.loss-card .lc-desc { font-size: 0.81rem; color: var(--text-secondary); line-height: 1.5; margin-top: 4px; }
+.method-legend {
+  display: flex;
+  gap: 20px;
+  font-family: var(--sans);
+  font-size: 0.84rem;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  justify-content: center;
+}
+.ml-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 5px; vertical-align: middle; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="byline">Week 4 - Inferential Statistics</div>
+  <h1>Correlation &amp; Regression</h1>
+  <p class="subtitle">Two complementary tools for understanding relationships between variables: correlation quantifies association, while regression predicts and models the relationship.</p>
+</header>
+
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#intro">1. Correlation vs. Regression</a></li>
+    <li><a href="#pearson">2. Pearson's r</a></li>
+    <li><a href="#pitfalls">3. Assumptions &amp; Pitfalls</a></li>
+    <li><a href="#regression">4. Regression Fundamentals</a></li>
+    <li><a href="#slr">5. Simple Linear Regression</a></li>
+    <li><a href="#mlr">6. Multiple Linear Regression</a></li>
+    <li><a href="#metrics">7. Evaluating Model Fit</a></li>
+    <li><a href="#robust">8. Robust Loss Functions</a></li>
+    <li><a href="#demos">9. Interactive Demos</a></li>
+  </ol>
+</nav>
+
+<main class="article">
+
+<section id="intro">
+  <h2><span class="section-num">1</span> Correlation vs. Regression</h2>
+  <p>Both tools explore the relationship between variables, but they answer different questions.</p>
+
+  <div class="step-flow">
+    <div class="step">
+      <div class="step-num" style="font-size:0.85rem">CORR</div>
+      <div class="step-title">Correlation</div>
+      <div class="step-desc">Measures the <strong>strength and direction</strong> of a linear relationship. It treats both variables equally: the correlation of X with Y is the same as the correlation of Y with X.</div>
+    </div>
+    <div class="step">
+      <div class="step-num" style="font-size:0.85rem">REGR</div>
+      <div class="step-title">Regression</div>
+      <div class="step-desc">Predicts a <strong>dependent variable (Y)</strong> from one or more <strong>independent variables (X)</strong>. It is directional: changing which variable is the outcome changes the model.</div>
+    </div>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-label">Warning: The Golden Rule</div>
+    <strong>Correlation does not imply causation.</strong> Two variables can be highly correlated because both are influenced by a hidden third variable: a <em>confounding variable</em>. Always ask whether a plausible mechanism supports the statistical pattern.
+  </div>
+</section>
+
+<section id="pearson">
+  <h2><span class="section-num">2</span> Pearson's \(r\)</h2>
+  <p>For linear relationships between two continuous variables, we use the <strong>Pearson Product-Moment Correlation Coefficient (\(r\))</strong>. It summarizes how closely two variables move together as a number between \(-1\) and \(+1\).</p>
+
+  <h3>The Formula</h3>
+  <p>Think of \(r\) as a ratio: <em>how much the variables vary together</em> divided by <em>how much they vary independently</em>.</p>
+  <div class="math-block">
+    $$r = \frac{\sum (X - \bar{X})(Y - \bar{Y})}{\sqrt{\sum (X - \bar{X})^2 \cdot \sum (Y - \bar{Y})^2}}$$
+  </div>
+
+  <ul class="list-spaced">
+    <li><strong>Numerator:</strong> covariance of \(X\) and \(Y\). Do high values of \(X\) tend to appear with high values of \(Y\)?</li>
+    <li><strong>Denominator:</strong> the product of their individual variation. This normalizes the score to the range \([-1, +1]\).</li>
+  </ul>
+
+  <h3>Interpreting the Value</h3>
+  <table class="comparison-table">
+    <thead><tr><th>Value</th><th>Meaning</th><th>Example</th></tr></thead>
+    <tbody>
+      <tr><td><span class="r-badge">r = +1</span></td><td>Perfect positive linear relationship</td><td>Every increase in X corresponds to a proportional increase in Y.</td></tr>
+      <tr><td><span class="r-badge">r = -1</span></td><td>Perfect negative linear relationship</td><td>As study hours increase, error rate decreases perfectly.</td></tr>
+      <tr><td><span class="r-badge">r = 0</span></td><td>No <em>linear</em> relationship</td><td>A curved relationship may still be present even when \(r\) is near zero.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <div class="callout-label">Reference: Cohen's Benchmarks</div>
+    <strong>|r| = 0.10:</strong> small &nbsp;-&nbsp; <strong>|r| = 0.30:</strong> medium &nbsp;-&nbsp; <strong>|r| = 0.50+:</strong> large. These are rough guidelines; field-specific norms always take precedence.
+  </div>
+
+  <div class="check-card">
+    <strong>Quick check:</strong> If resting heart rate and aerobic fitness have \(r = -0.68\), what does the negative sign tell you? What does it <em>not</em> prove?
+  </div>
+</section>
+
+<section id="pitfalls">
+  <h2><span class="section-num">3</span> Assumptions &amp; Pitfalls</h2>
+
+  <h3>Statistical Requirements</h3>
+  <div class="step-flow">
+    <div class="step">
+      <div class="step-num" style="font-size:.8rem">I/R</div>
+      <div class="step-title">Continuous Scale</div>
+      <div class="step-desc">Both variables should be interval or ratio data, such as height, temperature, time, force, or test score. For ordinal rankings, use <strong>Spearman's rank correlation</strong>.</div>
+    </div>
+    <div class="step">
+      <div class="step-num" style="font-size:.8rem">LIN</div>
+      <div class="step-title">Linearity</div>
+      <div class="step-desc">Pearson's \(r\) captures only the linear component of a relationship. Always visualize the data with a scatter plot before interpreting \(r\).</div>
+    </div>
+    <div class="step">
+      <div class="step-num" style="font-size:.8rem">OUT</div>
+      <div class="step-title">No Extreme Outliers</div>
+      <div class="step-desc">Pearson's \(r\) is sensitive to extreme points. One high-leverage outlier can inflate a weak association or obscure a strong one.</div>
+    </div>
+  </div>
+
+  <h3>Four Common Pitfalls</h3>
+  <div class="pitfall-grid">
+    <div class="pitfall-card">
+      <img src="../assets/images/week4/correlation_causation.webp" alt="Correlation does not imply causation">
+      <div class="pitfall-body">
+        <div class="pitfall-label">Pitfall A</div>
+        <div class="pitfall-title">The "Causation" Trap</div>
+        <div class="pitfall-desc">A and B moving together does not mean A causes B. Both may be driven by a hidden variable C. Always ask what mechanism could explain the pattern.</div>
+      </div>
+    </div>
+    <div class="pitfall-card">
+      <img src="../assets/images/week4/anscombe_quarter_visualization.png" alt="Anscombe's Quartet">
+      <div class="pitfall-body">
+        <div class="pitfall-label">Pitfall B</div>
+        <div class="pitfall-title">Anscombe's Quartet</div>
+        <div class="pitfall-desc">Very different datasets can share the same means, variances, and \(r = 0.816\), while telling completely different visual stories. Always plot the data.</div>
+      </div>
+    </div>
+    <div class="pitfall-card">
+      <img src="../assets/images/week4/restriction_of_range.png" alt="Restriction of range">
+      <div class="pitfall-body">
+        <div class="pitfall-label">Pitfall C</div>
+        <div class="pitfall-title">Restriction of Range</div>
+        <div class="pitfall-desc">Looking only at a narrow subset of the data range can make a real correlation vanish, shrink, or even reverse.</div>
+      </div>
+    </div>
+    <div class="pitfall-card">
+      <img src="../assets/images/week4/correlation_coefficient.png" alt="Nonlinear relationship with low correlation">
+      <div class="pitfall-body">
+        <div class="pitfall-label">Pitfall D</div>
+        <div class="pitfall-title">The "Zero Means Nothing" Myth</div>
+        <div class="pitfall-desc">\(r = 0\) means no linear relationship. A U-shape, curve, or threshold effect can still represent a strong non-linear relationship.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="regression">
+  <h2><span class="section-num">4</span> Regression Fundamentals</h2>
+  <p>Regression fits an equation to data so we can predict an outcome and describe how that prediction changes as predictors change.</p>
+
+  <h3>The Linear Equation</h3>
+  <div class="math-block">
+    $$Y = \beta_0 + \beta_1 X + \epsilon$$
+  </div>
+
+  <div class="step-flow">
+    <div class="step"><div class="step-num" style="font-size:.85rem">\(Y\)</div><div class="step-title">Dependent Variable</div><div class="step-desc">The outcome you are predicting.</div></div>
+    <div class="step"><div class="step-num" style="font-size:.85rem">\(X\)</div><div class="step-title">Independent Variable</div><div class="step-desc">The predictor used to estimate the outcome.</div></div>
+    <div class="step"><div class="step-num" style="font-size:.85rem">\(\beta_0\)</div><div class="step-title">Y-Intercept</div><div class="step-desc">The expected value of \(Y\) when \(X = 0\). Interpret only when \(X = 0\) is meaningful.</div></div>
+    <div class="step"><div class="step-num" style="font-size:.85rem">\(\beta_1\)</div><div class="step-title">Slope</div><div class="step-desc">The expected change in \(Y\) for a 1-unit increase in \(X\).</div></div>
+    <div class="step"><div class="step-num" style="font-size:.85rem">\(\epsilon\)</div><div class="step-title">Error Term</div><div class="step-desc">The residual variation in \(Y\) that the model does not explain.</div></div>
+  </div>
+
+  <h3>Example</h3>
+  <p>Suppose we record weekly endurance training hours and estimated VO2 max for a group of students. A simple model might be:</p>
+  <div class="math-block">
+    $$\widehat{VO2max} = 36.2 + 2.1(\text{training hours per week})$$
+  </div>
+  <p>The slope says that each additional weekly training hour is associated with an expected <strong>2.1 ml/kg/min higher VO2 max</strong>. The model is predictive and associational; it does not prove that adding one hour of training would cause exactly that gain for every person.</p>
+
+  <h3>Ordinary Least Squares (OLS)</h3>
+  <p>The best-fitting line is found by minimizing the <strong>Sum of Squared Errors (SSE)</strong>, also called the <strong>Residual Sum of Squares (RSS)</strong>. We square residuals so positive and negative errors do not cancel out:</p>
+  <div class="math-block">
+    $$SSE = \sum_{i=1}^{n} (Y_i - \hat{Y}_i)^2$$
+  </div>
+
+  <h3>Calculating the Coefficients</h3>
+  <p>The OLS solution has closed-form formulas. The slope is derived first, then the intercept ensures the line passes through \((\bar{X}, \bar{Y})\):</p>
+  <div class="math-block">
+    $$\hat{\beta}_1 = \frac{\sum (X_i - \bar{X})(Y_i - \bar{Y})}{\sum (X_i - \bar{X})^2}
+    \qquad
+    \hat{\beta}_0 = \bar{Y} - \hat{\beta}_1 \bar{X}$$
+  </div>
+
+  <h3>Connecting Correlation and Regression: \(R^2\)</h3>
+  <p>In simple linear regression, squaring Pearson's correlation gives the <strong>Coefficient of Determination</strong>:</p>
+  <div class="math-block">
+    $$R^2 = r^2$$
+  </div>
+  <div class="callout intuition">
+    <div class="callout-label">Interpretation</div>
+    \(R^2\) is the <strong>proportion of variance in \(Y\) explained by \(X\)</strong>. If \(r = 0.8\), then \(R^2 = 0.64\): 64% of the variability in the outcome is accounted for by the predictor.
+  </div>
+</section>
+
+<section id="slr">
+  <h2><span class="section-num">5</span> Simple Linear Regression (SLR)</h2>
+  <p>SLR models the relationship between one independent variable \(X\) and one dependent variable \(Y\) by fitting a straight line to observed data.</p>
+
+  <h3>Core Assumptions: LINE</h3>
+  <p>For valid statistical inference, four key assumptions should be checked:</p>
+  <div class="line-grid">
+    <div class="line-card"><div class="line-letter">L</div><div><div class="line-title">Linearity</div><div class="line-desc">The relationship between \(X\) and \(Y\) should be linear. Check this with a scatter plot.</div></div></div>
+    <div class="line-card"><div class="line-letter">I</div><div><div class="line-title">Independence</div><div class="line-desc">Residuals should be independent. Repeated measures and time-series data often violate this assumption.</div></div></div>
+    <div class="line-card"><div class="line-letter">N</div><div><div class="line-title">Normality</div><div class="line-desc">Residuals should be approximately normally distributed, especially for small samples.</div></div></div>
+    <div class="line-card"><div class="line-letter">E</div><div><div class="line-title">Equal Variance</div><div class="line-desc">Residual spread should be roughly constant across fitted values. A fan shape suggests heteroscedasticity.</div></div></div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">How to Check</div>
+    After fitting the model, examine a <strong>residuals vs. fitted values plot</strong> for linearity and equal variance, and a <strong>Q-Q plot of residuals</strong> for normality.
+  </div>
+</section>
+
+<section id="mlr">
+  <h2><span class="section-num">6</span> Multiple Linear Regression (MLR)</h2>
+  <p>MLR expands SLR by using <strong>two or more</strong> independent variables to predict one dependent variable. This helps account for multiple factors at once.</p>
+
+  <h3>The Model Equation</h3>
+  <div class="math-block">
+    $$Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \cdots + \beta_p X_p + \epsilon$$
+  </div>
+
+  <ul class="list-spaced">
+    <li><strong>\(p\):</strong> the number of independent predictor variables.</li>
+    <li><strong>\(\beta_1, \beta_2, \dots, \beta_p\):</strong> partial regression coefficients. Each coefficient estimates the expected change in \(Y\) per 1-unit change in that predictor, <strong>holding all other predictors constant</strong>.</li>
+  </ul>
+
+  <h3>Geometry</h3>
+  <p>SLR fits a best-fit <strong>line</strong> (1-D). MLR fits a best-fit <strong>plane</strong> for two predictors or a <strong>hyperplane</strong> (n-D) for three or more predictors. The OLS principle still applies: choose the coefficients that minimize SSE.</p>
+
+  <h3>Additional Assumption: No Multicollinearity</h3>
+  <div class="callout warning">
+    <div class="callout-label">Warning: Multicollinearity</div>
+    In MLR, predictors should not be highly correlated with each other. When predictors overlap too much, the model struggles to isolate each predictor's individual association with \(Y\). Detect this with the <strong>Variance Inflation Factor (VIF)</strong>; VIF &gt; 10 is a common warning sign.
+  </div>
+</section>
+
+<section id="metrics">
+  <h2><span class="section-num">7</span> Evaluating Model Fit</h2>
+  <p>To judge model fit, compare how much variation the model explains with how much unexplained error remains.</p>
+
+  <h3>A. Sum of Squared Errors (SSE)</h3>
+  <p>SSE, also called <strong>Residual Sum of Squares (RSS)</strong>, measures total unexplained variation. It sums squared distances between observed and predicted values:</p>
+  <div class="math-block">
+    $$SSE = \sum_{i=1}^{n} (Y_i - \hat{Y}_i)^2$$
+  </div>
+  <p>A lower SSE means predictions are closer to the observed data. OLS works by minimizing this quantity.</p>
+
+  <div class="callout warning">
+    <div class="callout-label">Limitation</div>
+    SSE is scale-dependent. If you convert metres to millimetres, SSE becomes much larger even though the model's fit has not changed.
+  </div>
+
+  <h3>B. Coefficient of Determination (\(R^2\))</h3>
+  <p>To create a scale-free metric, compare SSE with the <strong>Total Sum of Squares (SST)</strong>, the total variation in \(Y\) around its mean:</p>
+  <div class="math-block">
+    $$SST = \sum_{i=1}^{n}(Y_i - \bar{Y})^2
+    \qquad
+    R^2 = 1 - \frac{SSE}{SST}$$
+  </div>
+
+  <p>The variance partition is:</p>
+  <div class="var-bar" id="var-bar-diagram">
+    <div class="var-bar-seg" style="width:65%;background:#2563eb;">SSR (Explained)</div>
+    <div class="var-bar-seg" style="width:35%;background:#d97706;">SSE (Residual)</div>
+  </div>
+  <p style="font-size:0.8rem;color:var(--text-secondary);font-family:var(--sans)">
+    <strong>SST (Total)</strong> = <span style="color:#2563eb;font-weight:600">SSR</span> (explained by the model) + <span style="color:#d97706;font-weight:600">SSE</span> (residual error). &nbsp; \(R^2 = SSR / SST\)
+  </p>
+
+  <p>\(R^2\) ranges from \(0\) to \(1\). An \(R^2\) of \(0.85\) means the model explains <strong>85% of the variance</strong> in \(Y\).</p>
+
+  <h3>C. Adjusted \(R^2\): The Penalty Metric</h3>
+  <div class="callout danger">
+    <div class="callout-label">Caution: The Flaw of \(R^2\)</div>
+    Every time you add a predictor to an MLR model, even pure noise, \(R^2\) will increase or stay the same. It cannot decrease, which encourages overfitting.
+  </div>
+
+  <p><strong>Adjusted \(R^2\)</strong> penalizes extra predictors based on sample size \(n\) and number of predictors \(p\):</p>
+  <div class="math-block">
+    $$\text{Adjusted }R^2 = 1 - \left[\frac{(1 - R^2)(n - 1)}{n - p - 1}\right]$$
+  </div>
+  <ul class="list-spaced">
+    <li>Adjusted \(R^2\) increases only if a new predictor improves the model more than expected by chance.</li>
+    <li>Adjusted \(R^2\) decreases if a weak or useless predictor is added.</li>
+    <li>When comparing MLR models with different numbers of predictors, use <strong>Adjusted \(R^2\)</strong>.</li>
+  </ul>
+
+  <h3>Quick Reference</h3>
+  <table class="metrics-table">
+    <thead>
+      <tr><th>Metric</th><th>Range</th><th>Behavior When Adding Variables</th><th>Best Used For</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>SSE / RSS</strong></td><td>\(\ge 0\)</td><td>Always decreases or stays the same</td><td>OLS optimization; comparing models on the same outcome scale</td></tr>
+      <tr><td><strong>\(R^2\)</strong></td><td>\([0, 1]\)</td><td>Always increases or stays the same</td><td>Describing explained variance, especially in simple regression</td></tr>
+      <tr><td><strong>Adjusted \(R^2\)</strong></td><td>\(\le 1\)</td><td>Can increase or decrease</td><td>Comparing multiple regression models with different predictor counts</td></tr>
+    </tbody>
+  </table>
+
+  <div class="check-card">
+    <strong>Quick check:</strong> Why might a model with a slightly lower \(R^2\), but a higher adjusted \(R^2\), be the better model?
+  </div>
+</section>
+
+<!-- ====== 8: ROBUST LOSS FUNCTIONS ====== -->
+<section id="robust">
+  <h2><span class="section-num">8</span> Beyond MSE: Robust Loss Functions</h2>
+
+  <p>OLS regression is mathematically elegant — but it rests on a fragile foundation when data contain outliers. In clinical, biomechanical, and physiological research, extreme observations are not anomalies to discard: they are routine. Equipment malfunctions, subject non-compliance, movement artifacts, and biological extremes all produce data points that OLS cannot handle without distortion.</p>
+
+  <h3>Why L2 Breaks Under Pressure</h3>
+  <p>OLS minimizes the <strong>sum of squared</strong> residuals. Squaring is the source of the problem: a residual of 10 contributes 100 to the loss — ten times more than ten residuals of 1 would. A single outlier with a large residual dominates the entire optimization, pulling the regression line toward itself and away from the bulk of the data.</p>
+
+  <div class="math-block">
+    $$\text{L2 Loss:}\quad \rho(e) = e^2 \qquad\implies\qquad \text{influence grows quadratically as } |e| \to \infty$$
+  </div>
+
+  <div class="callout danger">
+    <div class="callout-label">⚠ Physiological Context — When Outliers Are Inevitable</div>
+    <ul style="margin:6px 0 0 20px;line-height:2">
+      <li><strong>VO₂max testing:</strong> A subject who terminated early (pain/nausea) gives a spuriously low value, biasing the group regression.</li>
+      <li><strong>Force plate data:</strong> Signal dropout or vibration artifacts produce extreme force spikes that dwarf the true biomechanical signal.</li>
+      <li><strong>Wearable sensors:</strong> Poor electrode contact generates physiologically impossible heart-rate or EMG readings.</li>
+      <li><strong>Clinical cohorts:</strong> Transcription errors, calibration drift, or subject non-compliance during a measurement window.</li>
+    </ul>
+  </div>
+
+  <h3>The Loss Function Landscape</h3>
+  <p>A <strong>loss function</strong> \(\rho(e)\) determines how harshly each residual \(e = Y_i - \hat{Y}_i\) is penalized. The choice of loss defines the regression estimator.</p>
+
+  <div class="loss-cmp-grid">
+    <div class="loss-card">
+      <span class="lc-badge lc-l2">Standard</span>
+      <div class="lc-name">L2 — Ordinary Least Squares</div>
+      <div style="font-family:var(--mono);font-size:0.82rem;color:var(--accent-dark);margin:4px 0">\(\rho(e) = e^2\)</div>
+      <div class="lc-desc">Penalty grows <strong>quadratically</strong>. Optimal when residuals are truly normal, but catastrophically sensitive to outliers. A single extreme point can dictate the entire fitted line.</div>
+    </div>
+    <div class="loss-card">
+      <span class="lc-badge lc-l1">Robust</span>
+      <div class="lc-name">L1 — Least Absolute Deviations</div>
+      <div style="font-family:var(--mono);font-size:0.82rem;color:#92400e;margin:4px 0">\(\rho(e) = |e|\)</div>
+      <div class="lc-desc">Penalty grows <strong>linearly</strong> — outliers cannot dominate. The solution is the <em>conditional median</em> of Y, making it fully robust. Limitation: non-differentiable at zero, and less efficient than L2 for clean data.</div>
+    </div>
+    <div class="loss-card">
+      <span class="lc-badge lc-hub">Recommended</span>
+      <div class="lc-name">Huber Loss</div>
+      <div style="font-family:var(--mono);font-size:0.82rem;color:#065f46;margin:4px 0">\(\rho(e;\delta) = \begin{cases} \tfrac{1}{2}e^2 & |e|\le\delta \\ \delta|e|-\tfrac{1}{2}\delta^2 & |e|>\delta \end{cases}\)</div>
+      <div class="lc-desc"><strong>Best of both worlds:</strong> quadratic (L2-efficient) near zero, linear (L1-robust) for large residuals. The threshold \(\delta\) is set adaptively from the median absolute deviation (MAD) of the data.</div>
+    </div>
+  </div>
+
+  <div class="figure-container">
+    <div class="fig-title">Figure — Loss Function Shapes &nbsp;(δ = 2 for Huber)</div>
+    <canvas id="lossCanvas" width="820" height="260"></canvas>
+    <div class="method-legend">
+      <span><span class="ml-dot" style="background:#2563eb"></span>L2 (OLS) — quadratic, unbounded influence</span>
+      <span><span class="ml-dot" style="background:#d97706"></span>L1 (LAD) — linear, bounded influence</span>
+      <span><span class="ml-dot" style="background:#059669"></span>Huber — hybrid, smooth transition at δ</span>
+    </div>
+  </div>
+
+  <h3>Fitting with Huber Loss: IRLS</h3>
+  <p>Huber regression is solved with <strong>Iteratively Reweighted Least Squares (IRLS)</strong> — a remarkably simple algorithm that converts the robust problem into a sequence of weighted OLS problems:</p>
+
+  <div class="step-flow">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-title">Initialize</div>
+      <div class="step-desc">Begin with the OLS solution \(\hat{\boldsymbol{\beta}}^{(0)}\) as the starting estimate.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-title">Compute Weights</div>
+      <div class="step-desc">Get residuals \(e_i\). Estimate scale: \(s = \text{MAD}/0.6745\). Set \(w_i = 1\) if \(|e_i/s| \le \delta\), else \(w_i = \delta / |e_i/s|\). Outliers get small \(w_i\).</div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-title">Weighted OLS</div>
+      <div class="step-desc">Solve \(\hat{\boldsymbol{\beta}} = (\mathbf{X}^T\mathbf{W}\mathbf{X})^{-1}\mathbf{X}^T\mathbf{W}\mathbf{y}\) — a standard weighted regression with the current weights.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-title">Iterate to Convergence</div>
+      <div class="step-desc">Repeat steps 2–3. Each iteration, outliers receive smaller weights; inliers retain weight 1. Typically converges in 5–15 iterations.</div>
+    </div>
+  </div>
+
+  <h3>Robust \(R^2\)</h3>
+  <p>Standard \(R^2\) is built on squared deviations and the arithmetic mean — both highly sensitive to outliers. A single extreme point can inflate SST and collapse \(R^2\) toward zero, even when the model fits the bulk of the data perfectly.</p>
+  <p>Robust regression produces a <strong>weighted \(R^2\)</strong> using the final IRLS weights \(w_i\):</p>
+
+  <div class="math-block">
+    $$R^2_{\text{robust}} = 1 - \frac{\displaystyle\sum_i w_i (Y_i - \hat{Y}_i)^2}{\displaystyle\sum_i w_i (Y_i - \bar{Y}_w)^2} \qquad\text{where}\quad \bar{Y}_w = \frac{\sum_i w_i Y_i}{\sum_i w_i}$$
+  </div>
+
+  <p>Outliers (low \(w_i\)) contribute little to either the numerator or denominator, so \(R^2_\text{robust}\) reflects the model's quality on the <em>clean majority</em> of the data rather than being distorted by noise.</p>
+
+  <div class="callout intuition">
+    <div class="callout-label">💡 Conceptual Key</div>
+    Robust regression does not discard outliers — it assigns them <em>proportionally reduced influence</em>. The IRLS weights are the mechanism: extreme observations receive weights near zero automatically, while inliers retain weight 1. The result is a stable estimate that robustly represents the underlying physiological relationship.
+  </div>
+
+  <div class="figure-container">
+    <div class="fig-title">Figure — OLS vs. Huber Regression &nbsp;·&nbsp; Aerobic Training Load vs. VO₂max Improvement</div>
+    <canvas id="robustCanvas" width="820" height="380"></canvas>
+    <div class="controls">
+      <div class="control-group">
+        <label>Outlier Severity (Subject 12 — Equipment Malfunction)</label>
+        <input type="range" id="rob_sev" min="0" max="10" step="0.1" value="0">
+        <span class="val" id="rob_sev_v">0.0</span>
+      </div>
+      <button class="run-btn secondary" id="rob_reset" style="padding:6px 16px;font-size:0.82rem;align-self:flex-end">Reset</button>
+    </div>
+    <div class="stat-readout" id="rob-stats" style="margin-top:10px"></div>
+    <div class="method-legend" style="margin-top:10px">
+      <span><span class="ml-dot" style="background:#2563eb"></span>OLS regression line</span>
+      <span><span class="ml-dot" style="background:#059669"></span>Huber regression line</span>
+      <span><span class="ml-dot" style="background:#dc2626"></span>Outlier subject</span>
+      <span><span class="ml-dot" style="background:#94a3b8"></span>Clean subjects</span>
+    </div>
+  </div>
+
+</section>
+
+<!-- ====== 9: INTERACTIVE DEMOS ====== -->
+<section id="demos">
+  <h2><span class="section-num">9</span> Interactive Demos</h2>
+
+  <h3>Demo A: Residuals &amp; Least Squares</h3>
+  <p>Use the sliders to move a regression line through a small BPK-style dataset. The vertical orange segments are residuals: each student's observed VO2 max minus the value predicted from weekly training hours.</p>
+
+  <div class="figure-container">
+    <div class="fig-title">Training Hours vs. VO2 Max</div>
+    <div class="demo-cols">
+      <div>
+        <div class="demo-canvas-wrap">
+          <canvas id="ols-canvas" width="520" height="360" aria-label="Scatter plot with adjustable regression line"></canvas>
+        </div>
+        <div class="controls">
+          <div class="control-group">
+            <label for="slope-slider">Slope \(\beta_1\)</label>
+            <input id="slope-slider" type="range" min="-1" max="5" step="0.1" value="1.4">
+            <span class="val" id="slope-val">1.4</span>
+          </div>
+          <div class="control-group">
+            <label for="intercept-slider">Intercept \(\beta_0\)</label>
+            <input id="intercept-slider" type="range" min="25" max="50" step="0.5" value="37">
+            <span class="val" id="intercept-val">37.0</span>
+          </div>
+          <button class="run-btn" id="reveal-ols" type="button">Reveal OLS</button>
+          <button class="run-btn secondary" id="reset-demo" type="button">Reset</button>
+        </div>
+      </div>
+      <div class="demo-right">
+        <div class="readout-box">
+          <strong>Model:</strong> <span id="model-readout"></span><br>
+          <strong>SSE:</strong> <span id="sse-readout"></span><br>
+          <strong>\(R^2\):</strong> <span id="r2-readout"></span>
+          <div class="sse-meter" aria-hidden="true"><div class="sse-meter-fill" id="sse-meter-fill"></div></div>
+        </div>
+        <div class="check-card">
+          <strong>Try this:</strong> Move the line until the SSE bar is as small as you can make it, then reveal the OLS solution. The best-looking line is the one that minimizes the squared residuals, not necessarily the one that passes through the most points.
+        </div>
+        <div class="check-card">
+          <strong>Concept link:</strong> Correlation tells us whether training hours and VO2 max tend to move together. Regression gives a prediction equation and residuals for each observation.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Demo B: Noise, Outliers, and Robust Regression</h3>
+  <p>These samples are generated from an underlying line, then corrupted by noise. Compare the ordinary L2/MSE fit with L1 and Huber fits as the noise becomes heavy-tailed or contaminated by extreme outliers.</p>
+
+  <div class="figure-container">
+    <div class="fig-title">Robust Loss Comparison</div>
+    <div class="demo-cols">
+      <div>
+        <div class="demo-canvas-wrap">
+          <canvas id="robust-canvas" width="520" height="360" aria-label="Generated scatter plot comparing L2, L1, and Huber regression lines"></canvas>
+        </div>
+        <div class="loss-legend">
+          <span class="legend-key"><span class="legend-swatch" style="background:#2563eb"></span>L2 / MSE</span>
+          <span class="legend-key"><span class="legend-swatch" style="background:#059669"></span>L1 / MAE</span>
+          <span class="legend-key"><span class="legend-swatch" style="background:#dc2626"></span>Huber</span>
+          <span class="legend-key"><span class="legend-swatch" style="background:#1a1a2e"></span>True line</span>
+        </div>
+        <div class="controls">
+          <div class="control-group">
+            <label for="noise-model">Noise model</label>
+            <select id="noise-model">
+              <option value="gaussian">Gaussian noise</option>
+              <option value="heavy">Heavy-tail noise</option>
+              <option value="outlier">Extreme outliers</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label for="noise-sigma">Noise SD</label>
+            <input id="noise-sigma" type="range" min="0.2" max="3.5" step="0.1" value="1.0">
+            <span class="val" id="noise-sigma-val">1.0</span>
+          </div>
+          <div class="control-group">
+            <label for="outlier-prob">Outlier probability</label>
+            <input id="outlier-prob" type="range" min="0" max="0.35" step="0.01" value="0.08">
+            <span class="val" id="outlier-prob-val">0.08</span>
+          </div>
+          <button class="run-btn" id="regenerate-noise" type="button">Regenerate</button>
+        </div>
+      </div>
+      <div class="demo-right">
+        <div class="readout-box">
+          <strong>True line:</strong> <span id="true-line-readout"></span><br>
+          <strong>L2 / MSE:</strong> <span id="l2-readout"></span><br>
+          <strong>L1 / MAE:</strong> <span id="l1-readout"></span><br>
+          <strong>Huber:</strong> <span id="huber-readout"></span>
+        </div>
+        <div class="check-card">
+          <strong>Try this:</strong> Increase outlier probability in the extreme-outlier setting. The L2 line gets pulled toward unusual points because squared error makes large residuals extremely expensive.
+        </div>
+        <div class="check-card">
+          <strong>Concept link:</strong> L1 and Huber losses reduce the influence of very large residuals. They are useful when data may contain measurement errors, equipment artifacts, or unusual observations.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <p>Inquiry and Measurement in Biomedical Physiology and Kinesiology</p>
+</footer>
+
+<script src="../js/utils.js"></script>
+<script src="../js/demo-ols-residuals.js"></script>
+<script src="../js/demo-noise-robust.js"></script>
+<script src="../js/demo-loss-shapes.js"></script>
+<script src="../js/demo-huber.js"></script>
+<script>
+renderMathInElement(document.body, {
+  delimiters: [
+    {left:'$$', right:'$$', display:true},
+    {left:'\\(', right:'\\)', display:false}
+  ]
+});
+</script>
+</body>
+</html>
