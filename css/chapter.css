@@ -112,6 +112,37 @@ p {
   font-weight: 600;
 }
 
+.note-muted {
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.note-muted.compact {
+  font-size: 0.8rem;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.table-narrow {
+  max-width: 480px;
+  margin: 20px 0;
+}
+
+.mt-10 {
+  margin-top: 10px;
+}
+
+.mt-24 {
+  margin-top: 24px;
+}
+
+.link-accent {
+  color: var(--accent);
+}
+
 .list-spaced {
   margin: 0 0 16px 24px;
   line-height: 2;
@@ -363,6 +394,18 @@ button.run-btn.secondary:hover {
   margin-bottom: 4px;
 }
 
+.step .step-num.step-token {
+  font-size: 0.85rem;
+}
+
+.step .step-num.step-token-sm {
+  font-size: 0.8rem;
+}
+
+.step .step-num.step-token-md {
+  font-size: 0.9rem;
+}
+
 .step .step-title {
   font-family: var(--sans);
   font-weight: 600;
@@ -415,6 +458,26 @@ button.run-btn.secondary:hover {
 
 .is-hidden {
   display: none;
+}
+
+.dot-blue {
+  background: #2563eb;
+}
+
+.dot-orange {
+  background: #d97706;
+}
+
+.dot-green {
+  background: #059669;
+}
+
+.dot-red {
+  background: #dc2626;
+}
+
+.dot-slate {
+  background: #94a3b8;
 }
 
 .dtype-grid {

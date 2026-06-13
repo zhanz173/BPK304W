@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -20,162 +20,13 @@
 
 <link rel="stylesheet" href="../css/base.css">
 <link rel="stylesheet" href="../css/chapter.css">
-<style>
-.ss-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 24px 0;
-  font-family: var(--sans);
-  font-size: 0.82rem;
-}
-.ss-table th {
-  background: var(--accent);
-  color: #fff;
-  padding: 9px 12px;
-  text-align: left;
-  font-weight: 600;
-}
-.ss-table th:first-child { border-radius: 8px 0 0 0; }
-.ss-table th:last-child  { border-radius: 0 8px 0 0; }
-.ss-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
-.ss-table tr:nth-child(even) td { background: var(--sidenote-bg); }
-.ss-table .total-row td { font-weight: 700; border-top: 2px solid var(--border); background: var(--sidenote-bg); }
-
-.effects-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin: 20px 0;
-}
-.effect-card {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 12px 16px;
-}
-.effect-card .etype {
-  font-family: var(--sans);
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--text-secondary);
-  margin-bottom: 3px;
-}
-.effect-card .ename {
-  font-family: var(--sans);
-  font-weight: 700;
-  font-size: 0.95rem;
-  color: var(--accent);
-}
-.effect-card .edesc {
-  font-size: 0.82rem;
-  color: var(--text-secondary);
-  margin-top: 4px;
-  line-height: 1.4;
-}
-.effect-card.full { grid-column: 1 / -1; }
-
-.interaction-legend {
-  display: flex;
-  gap: 24px;
-  margin-top: 10px;
-  font-family: var(--sans);
-  font-size: 0.85rem;
-  justify-content: center;
-}
-.ldot {
-  width: 12px; height: 12px;
-  border-radius: 50%;
-  display: inline-block;
-  margin-right: 5px;
-  vertical-align: middle;
-}
-
-/* ---- Quiz ---- */
-.scenario-card {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 28px 28px 20px;
-  margin: 28px 0;
-  box-shadow: 0 1px 4px rgba(0,0,0,.04);
-}
-.sc-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 14px; }
-.sc-num {
-  font-family: var(--sans); font-size: 0.72rem; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent); white-space: nowrap;
-}
-.sc-title { font-family: var(--sans); font-size: 1.05rem; font-weight: 700; }
-.sc-text { font-size: 0.93rem; line-height: 1.7; margin-bottom: 14px; }
-.dv-pill {
-  display: inline-block;
-  font-family: var(--sans); font-size: 0.78rem; font-weight: 600;
-  background: var(--accent-light); color: var(--accent-dark);
-  padding: 3px 10px; border-radius: 20px; margin-bottom: 18px;
-}
-.quiz-step { border-top: 1px solid var(--border); padding: 16px 0 8px; }
-.qs-label {
-  font-family: var(--sans); font-size: 0.75rem; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); margin-bottom: 8px;
-}
-.qs-q { font-size: 0.95rem; margin-bottom: 11px; }
-.choice-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
-.cbtn {
-  font-family: var(--sans); font-size: 0.84rem; font-weight: 600;
-  padding: 7px 16px;
-  border: 1.5px solid var(--border); border-radius: 6px;
-  background: var(--card-bg); color: var(--text);
-  cursor: pointer; transition: all .15s;
-}
-.cbtn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
-.cbtn.sel   { border-color: var(--accent); background: var(--accent-light); color: var(--accent-dark); }
-.cbtn.ok    { border-color: var(--green); background: var(--green-light); color: var(--green); }
-.cbtn.bad   { border-color: var(--red); background: var(--red-light); color: var(--red); }
-.cbtn.reveal{ border-color: var(--green); background: var(--green-light); color: var(--green); }
-.cbtn:disabled { cursor: default; }
-.qfb {
-  font-family: var(--sans); font-size: 0.85rem;
-  padding: 10px 14px; border-radius: 6px; margin: 8px 0;
-  display: none; line-height: 1.6;
-}
-.qfb.show { display: block; }
-.qfb.ok  { background: var(--green-light); color: #065f46; border-left: 3px solid var(--green); }
-.qfb.bad { background: var(--red-light);   color: #991b1b; border-left: 3px solid var(--red); }
-.step-locked { opacity: .4; pointer-events: none; }
-.breakdown { display: none; margin: 14px 0 4px; }
-.breakdown.show { display: block; }
-.breakdown table { width: 100%; border-collapse: collapse; font-family: var(--sans); font-size: 0.84rem; }
-.breakdown th {
-  background: var(--sidenote-bg); padding: 7px 12px; text-align: left;
-  font-weight: 700; color: var(--text-secondary); font-size: 0.73rem;
-  text-transform: uppercase; letter-spacing: .5px;
-}
-.breakdown td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
-.ltag {
-  display: inline-block; font-size: 0.74rem; font-weight: 600;
-  padding: 2px 7px; border-radius: 4px; margin: 2px 2px;
-}
-.ltag.bt { background: var(--accent-light); color: var(--accent-dark); }
-.ltag.wt { background: var(--green-light);  color: var(--green); }
-.score-bar {
-  font-family: var(--sans); font-size: 1rem; font-weight: 700;
-  text-align: center; padding: 16px;
-  background: var(--sidenote-bg); border-radius: 8px; margin: 12px 0;
-}
-@media (max-width: 640px) {
-  .effects-grid { grid-template-columns: 1fr; }
-  .effect-card.full { grid-column: 1; }
-  .choice-grid { flex-direction: column; }
-  .scenario-card { padding: 18px 14px; }
-}
-</style>
+<link rel="stylesheet" href="../css/anova.css">
 </head>
 <body>
 
 <!-- HERO -->
 <header class="hero">
-  <div class="byline">Week 3 · Inferential Statistics</div>
+  <div class="byline">Week 3 - Inferential Statistics</div>
   <h1>Analysis of Variance (ANOVA)</h1>
   <p class="subtitle">When our designs expand beyond two groups, running a cascade of individual $t$-tests becomes statistically invalid.
      This is where the Analysis of Variance (ANOVA) becomes essential.</p>
@@ -276,14 +127,14 @@
   <table class="comparison-table">
     <thead><tr><th>Scenario</th><th>F-value</th><th>Interpretation</th></tr></thead>
     <tbody>
-      <tr><td>No treatment effect</td><td>\(F \approx 1\)</td><td>Between ≈ Within; nothing to detect</td></tr>
+      <tr><td>No treatment effect</td><td>\(F \approx 1\)</td><td>Between \( \approx \) Within; nothing to detect</td></tr>
       <tr><td>Moderate effect</td><td>\(F > 1\)</td><td>Between exceeds Within; possible signal</td></tr>
       <tr><td>Strong effect</td><td>\(F \gg 1\)</td><td>Clear signal above background noise</td></tr>
     </tbody>
   </table>
 
   <h3>The F-Distribution</h3>
-  <p>Unlike the symmetric \(t\)-distribution, the F-distribution is <strong>strictly positive</strong> (variance ratios can't be negative) and <strong>right-skewed</strong> — most random F-ratios cluster near 1, but large values occur by chance with decreasing probability. Its shape is governed by two degrees of freedom: \(df_1 = k-1\) (numerator) and \(df_2 = N-k\) (denominator).</p>
+  <p>Unlike the symmetric \(t\)-distribution, the F-distribution is <strong>strictly positive</strong> (variance ratios can't be negative) and <strong>right-skewed</strong> â€?most random F-ratios cluster near 1, but large values occur by chance with decreasing probability. Its shape is governed by two degrees of freedom: \(df_1 = k-1\) (numerator) and \(df_2 = N-k\) (denominator).</p>
   <p>Thus an \(F\)-distribution is always specified using a pair of degrees of freedom: \(F(df_{\text{numerator}}, df_{\text{denominator}})\) </p>
   <h3>F-Ratio Explorer</h3>
   <p>Adjust the sliders to change how spread apart the group means are (signal) and how much individuals vary within groups (noise). Watch the F-value and p-value respond.</p>
@@ -359,17 +210,17 @@
 
   <div class="step-flow">
     <div class="step">
-      <div class="step-num" style="font-size:.9rem">DV</div>
+      <div class="step-num step-token-md">DV</div>
       <div class="step-title">Dependent Variable</div>
-      <div class="step-desc">The outcome you measure — e.g., muscle strength, reaction time, pain score. There is always exactly one DV in a standard ANOVA.</div>
+      <div class="step-desc">The outcome you measure - e.g., muscle strength, reaction time, pain score. There is always exactly one DV in a standard ANOVA.</div>
     </div>
     <div class="step">
-      <div class="step-num" style="font-size:.9rem">IV</div>
+      <div class="step-num step-token-md">IV</div>
       <div class="step-title">Factor (Independent Variable)</div>
       <div class="step-desc">A categorical variable hypothesized to influence the DV. The <em>number</em> of factors determines the "way" of your ANOVA.</div>
     </div>
     <div class="step">
-      <div class="step-num" style="font-size:.9rem">L</div>
+      <div class="step-num step-token-md">L</div>
       <div class="step-title">Levels</div>
       <div class="step-desc">The specific categories within each factor. A "Dose" factor might have levels: None, Low, High. Each factor must have at least 2 levels.</div>
     </div>
@@ -379,7 +230,7 @@
   <p>One categorical independent variable with three or more levels and one continuous DV.</p>
 
   <div class="callout">
-    <div class="callout-label">📐 Note</div>
+    <div class="callout-label">ðŸ“ Note</div>
     A one-way ANOVA with exactly two levels is mathematically equivalent to an independent-samples \(t\)-test. Use the \(t\)-test in that case for convention.
   </div>
 
@@ -410,14 +261,14 @@
       </tr>
     </tbody>
   </table>
-  <p style="font-size:.85rem;color:var(--text-secondary)">\(k\) = number of groups; \(N\) = total sample size.</p>
+  <p class="note-muted">\(k\) = number of groups; \(N\) = total sample size.</p>
 
   <h3>Two-Way ANOVA: Main Effects and Interactions</h3>
   <p>Two categorical IVs are studied simultaneously. The ANOVA produces <strong>three</strong> separate F-tests:</p>
   <ol class="list-spaced">
     <li><strong>Main Effect of A:</strong> Does the DV differ across levels of A, averaging over all levels of B?</li>
     <li><strong>Main Effect of B:</strong> Does the DV differ across levels of B, averaging over all levels of A?</li>
-    <li><strong>Interaction (A × B):</strong> Does the effect of A on the DV <em>change depending on</em> which level of B is present?</li>
+    <li><strong>Interaction (A x B):</strong> Does the effect of A on the DV <em>change depending on</em> which level of B is present?</li>
   </ol>
 
   <div class="callout intuition">
@@ -510,57 +361,57 @@
 
   <h3>Example: Simple Main Effects Analysis</h3>
   <p>A researcher tests whether a <strong>protein supplement</strong> (Placebo vs. Protein) affects strength gain differently depending on <strong>training status</strong> (Novice vs. Experienced). 80 participants are randomly assigned to one of four cells (n = 20 each). However, the Two-Way ANOVA returns a <strong>significant interaction</strong>, \(F(1, 76) = 9.42,\ p = .003\).</p>
-  <p>Because the interaction is significant, we do <em>not</em> reject null hypothesis even though \(p = 0.03 < 0.05\). Instead, we test <strong>simple main effects</strong> — the effect of Supplement separately within each Experience level, and the effect of Experience separately within each Supplement condition.</p>
+  <p>Because the interaction is significant, we do <em>not</em> reject null hypothesis even though \(p = 0.03 < 0.05\). Instead, we test <strong>simple main effects</strong> â€?the effect of Supplement separately within each Experience level, and the effect of Experience separately within each Supplement condition.</p>
 
-  <table class="comparison-table" style="max-width:480px;margin:20px 0;">
+  <table class="comparison-table table-narrow">
     <thead>
-      <tr><th></th><th style="text-align:center">Novice</th><th style="text-align:center">Experienced</th></tr>
+      <tr><th></th><th class="text-center">Novice</th><th class="text-center">Experienced</th></tr>
     </thead>
     <tbody>
-      <tr><td><strong>Placebo</strong></td><td style="text-align:center">4 kg</td><td style="text-align:center">3 kg</td></tr>
-      <tr><td><strong>Protein</strong></td><td style="text-align:center">12 kg</td><td style="text-align:center">5 kg</td></tr>
+      <tr><td><strong>Placebo</strong></td><td class="text-center">4 kg</td><td class="text-center">3 kg</td></tr>
+      <tr><td><strong>Protein</strong></td><td class="text-center">12 kg</td><td class="text-center">5 kg</td></tr>
     </tbody>
   </table>
 
   <div class="figure-container">
-    <div class="fig-title">Figure — Simple Main Effects Explorer &nbsp;(2 × 2 Design)</div>
+    <div class="fig-title">Figure — Simple Main Effects Explorer &nbsp;(2 x 2 Design)</div>
     <div class="tab-row" id="sme-tabs">
-      <button class="tab-btn active" data-sme="all">Full 2×2</button>
+      <button class="tab-btn active" data-sme="all">Full 2x2</button>
       <button class="tab-btn" data-sme="a-at-b1">Supplement effect | Novice</button>
       <button class="tab-btn" data-sme="a-at-b2">Supplement effect | Experienced</button>
       <button class="tab-btn" data-sme="b-at-a1">Experience effect | Placebo</button>
       <button class="tab-btn" data-sme="b-at-a2">Experience effect | Protein</button>
     </div>
     <canvas id="smeCanvas" width="820" height="300"></canvas>
-    <div class="stat-readout" id="sme-readout" style="margin-top:10px"></div>
+    <div class="stat-readout mt-10" id="sme-readout"></div>
   </div>
 
-  <p>The averaged main effect of Supplement reports <strong>+5 kg</strong> — but this conceals that the benefit is <strong>+8 kg for novices</strong> and only <strong>+2 kg for experienced athletes</strong>. Reporting the main effect alone overstates the supplement's value for experienced athletes and understates it for beginners.</p>
+  <p>The averaged main effect of Supplement reports <strong>+5 kg</strong>, but this conceals that the benefit is <strong>+8 kg for novices</strong> and only <strong>+2 kg for experienced athletes</strong>. Reporting the main effect alone overstates the supplement's value for experienced athletes and understates it for beginners.</p>
 
   <div class="callout intuition">
-    <div class="callout-label">💡 Rule of Thumb</div>
+    <div class="callout-label">ðŸ’¡ Rule of Thumb</div>
     A significant interaction is a <em>warning sign</em> on both main effects. You must break down the analysis into simple main effects to understand the true pattern.
      Never report the significance of main effects without first checking the interaction.
   </div>
 
   <h3>Three-Way ANOVA</h3>
-  <p>Adding a third categorical IV expands the model to <strong>seven distinct components</strong>, each with its own F-test:</p>
+  <p>Adding a third factor expands the model to <strong>seven distinct components</strong>, each with its own F-test:</p>
 
   <div class="effects-grid">
     <div class="effect-card">
-      <div class="etype">Main Effects × 3</div>
+      <div class="etype">Main Effects x 3</div>
       <div class="ename">A, B, C</div>
       <div class="edesc">The independent effect of each factor, averaging across all levels of the other two.</div>
     </div>
     <div class="effect-card">
-      <div class="etype">Two-Way Interactions × 3</div>
-      <div class="ename">A×B &nbsp; A×C &nbsp; B×C</div>
+      <div class="etype">Two-Way Interactions x 3</div>
+      <div class="ename">AxB &nbsp; AxC &nbsp; BxC</div>
       <div class="edesc">Whether the effect of one factor depends on the level of another.</div>
     </div>
     <div class="effect-card full">
-      <div class="etype">Three-Way Interaction × 1</div>
-      <div class="ename">A × B × C</div>
-      <div class="edesc">Whether the A×B interaction itself changes across levels of C. Visualize it as: draw the A×B line graph for level C₁, then draw it again for C₂. If those two graphs look different from each other, a three-way interaction is present.</div>
+      <div class="etype">Three-Way Interaction x 1</div>
+      <div class="ename">A x B x C</div>
+      <div class="edesc">Whether the AxB interaction itself changes across levels of C. Visualize it as: draw the AxB line graph for level \(C_1\) then draw it again for \(C_2\). If those two graphs look different from each other, a three-way interaction is present.</div>
     </div>
   </div>
 
@@ -589,7 +440,7 @@
 
   <ul class="list-spaced">
     <li><strong>Statistical advantage:</strong> Individual differences can be mathematically <em>removed</em> from the error term, shrinking the denominator dramatically and boosting statistical power. Smaller samples are required.</li>
-    <li><strong>New assumption — Sphericity:</strong> Because the same people appear in every condition, observations are no longer independent. Sphericity requires that the variances of <em>differences</em> between all condition pairs are equal. Test with <strong>Mauchly's Test</strong>. If violated, apply the <strong>Greenhouse-Geisser correction</strong> to the degrees of freedom.</li>
+    <li><strong>New assumption — Sphericity:</strong> Because the same people appear in every condition, observations are no longer independent. Sphericity requires that the variances of <em>differences</em> between all condition pairs are equal (Test with <strong>Mauchly's Test</strong>. If violated, apply the <strong>Greenhouse-Geisser correction</strong> to the degrees of freedom).</li>
   </ul>
 
   <h3>Mixed Design (Split-Plot ANOVA)</h3>
@@ -624,12 +475,12 @@
   <p>Work through each scenario below. For each one, identify the number of factors, the experimental design, and the correct ANOVA test. The dependent variable is shown in blue — start there, then identify what is being manipulated and how participants were assigned.</p>
 
   <div id="quiz-wrap"></div>
-  <div class="score-bar" id="score-bar" style="display:none"></div>
+  <div class="score-bar is-hidden" id="score-bar"></div>
 
-  <div style="margin-top:24px;font-family:var(--sans);font-size:0.85rem;color:var(--text-secondary)">
+  <div class="note-muted mt-24">
     Further reading:
-    <a href="https://numiqo.com/tutorial/anova" style="color:var(--accent)">Numiqo: Online ANOVA Calculator</a> ·
-    <a href="https://stats.libretexts.org/Bookshelves/Applied_Statistics/Natural_Resources_Biometrics_(Kiernan)/05%3A_One-Way_Analysis_of_Variance/5.01%3A_Analysis_of_Variance" style="color:var(--accent)">LibreTexts: Analysis of Variance</a>
+    <a class="link-accent" href="https://numiqo.com/tutorial/anova">Numiqo: Online ANOVA Calculator</a>
+    <a class="link-accent" href="https://stats.libretexts.org/Bookshelves/Applied_Statistics/Natural_Resources_Biometrics_(Kiernan)/05%3A_One-Way_Analysis_of_Variance/5.01%3A_Analysis_of_Variance">LibreTexts: Analysis of Variance</a>
   </div>
 </section>
 
@@ -649,7 +500,7 @@ renderMathInElement(document.body, {
   ]
 });
 
-// ── Shared utilities ──────────────────────────────────────────────────────────
+// Shared utilities
 const DPR = window.devicePixelRatio || 1;
 
 function setupCanvas(el) {
@@ -704,7 +555,7 @@ function fmtP(p) {
   return 'p = ' + p.toFixed(3);
 }
 
-// ── F-Ratio Visualizer ────────────────────────────────────────────────────────
+//F-Ratio Visualizer 
 (function() {
   const cv = document.getElementById('fCanvas');
   const ctx = setupCanvas(cv);
@@ -806,7 +657,7 @@ function fmtP(p) {
   draw();
 })();
 
-// ── Interaction Explorer ──────────────────────────────────────────────────────
+// interaction plot
 (function() {
   const cv = document.getElementById('intCanvas');
   const ctx = setupCanvas(cv);
@@ -872,10 +723,10 @@ function fmtP(p) {
 
     const parallel = ab === 0;
     document.getElementById('int_readout').innerHTML =
-      `<div class="stat" style="font-family:var(--sans);font-size:.85rem">` +
+      `<div class="stat anova-inline-stat">` +
       (parallel
-        ? '<span style="color:var(--green);font-weight:700">Lines are parallel</span> — no A×B interaction. The effect of Factor A is identical at both levels of B.'
-        : '<span style="color:var(--orange);font-weight:700">Lines are not parallel</span> — an A×B interaction is present. The effect of Factor A differs depending on the level of B.') +
+        ? '<span style="color:var(--green);font-weight:700">Lines are parallel</span> — no AxB interaction. The effect of Factor A is identical at both levels of B.'
+        : '<span style="color:var(--orange);font-weight:700">Lines are not parallel</span> — an AxB interaction is present. The effect of Factor A differs depending on the level of B.') +
       `</div>`;
   }
 
@@ -883,7 +734,7 @@ function fmtP(p) {
   draw();
 })();
 
-// ── Quiz ──────────────────────────────────────────────────────────────────────
+// Quiz
 (function() {
   const SCENARIOS = [
     {
@@ -892,7 +743,7 @@ function fmtP(p) {
       dv: 'Leg-press strength (kg)',
       factors: [{ name: 'Supplement Type', levels: ['Whey','Casein','Pea'], type: 'bt' }],
       nf: 1, design: 'between', answer: 'ow-bt',
-      expl: 'There is <strong>one factor</strong> (Supplement Type) with 3 levels. Each participant belongs to exactly one group — a fully <strong>between-subjects</strong> design. Use a <strong>One-Way ANOVA</strong>. If significant, follow up with Tukey\'s HSD to pinpoint which supplement pairs differ.'
+      expl: 'There is <strong>one factor</strong> (Supplement Type) with 3 levels. Each participant belongs to exactly one group â€?a fully <strong>between-subjects</strong> design. Use a <strong>One-Way ANOVA</strong>. If significant, follow up with Tukey\'s HSD to pinpoint which supplement pairs differ.'
     },
     {
       num: 2, title: 'Temperature & Running Performance',
@@ -1036,8 +887,8 @@ function fmtP(p) {
     const rows = sc.factors.map(f => {
       const lvls = f.levels.map(l => `<span class="ltag ${f.type}">${l}</span>`).join('');
       const badge = f.type === 'wt'
-        ? '<span class="ltag wt" style="font-size:.7rem">Within-Subjects</span>'
-        : '<span class="ltag bt" style="font-size:.7rem">Between-Subjects</span>';
+        ? '<span class="ltag wt compact">Within-Subjects</span>'
+        : '<span class="ltag bt compact">Between-Subjects</span>';
       return `<tr><td>${f.name} ${badge}</td><td>${f.levels.length}</td><td>${lvls}</td></tr>`;
     }).join('');
 
@@ -1061,7 +912,7 @@ function fmtP(p) {
     const el = document.getElementById('score-bar');
     if (!done) { el.style.display='none'; return; }
     el.style.display = 'block';
-    el.innerHTML = `ANOVA Selection Score: <span style="color:var(--accent)">${correct} / ${done}</span> correct &nbsp;(${done} of ${SCENARIOS.length} scenarios attempted)`;
+    el.innerHTML = `ANOVA Selection Score: <span class="score-value">${correct} / ${done}</span> correct &nbsp;(${done} of ${SCENARIOS.length} scenarios attempted)`;
   }
 
   const wrap = document.getElementById('quiz-wrap');
@@ -1085,7 +936,7 @@ function fmtP(p) {
   });
 })();
 
-// ── Simple Main Effects Explorer ────────────────────────────────────────────
+// Simple Main Effects Explorer
 (function() {
   const cv = document.getElementById('smeCanvas');
   if (!cv) return;
@@ -1115,23 +966,23 @@ function fmtP(p) {
   const CFG = {
     all: {
       hl: ['a1b1','a2b1','a1b2','a2b2'], ann: null,
-      txt: 'Full 2×2 design. Main effect of Supplement (averaged): (12+5)/2 − (4+3)/2 = <strong>+5 kg</strong>. This average conceals the interaction — select a tab to isolate each simple main effect.'
+      txt: 'Full 2x2 design. Main effect of Supplement (averaged): (12+5)/2 - (4+3)/2 = <strong>+5 kg</strong>. This average conceals the interaction — select a tab to isolate each simple main effect.'
     },
     'a-at-b1': {
       hl: ['a1b1','a2b1'], ann: {k:['a1b1','a2b1'], cross:false},
-      txt: '<strong>Supplement effect | Novice:</strong> Protein (12 kg) − Placebo (4 kg) = <strong style="color:#dc2626">+8 kg</strong>. A large gain for novice athletes.'
+      txt: '<strong>Supplement effect | Novice:</strong> Protein (12 kg) - Placebo (4 kg) = <strong class="simple-effect-value">+8 kg</strong>. A large gain for novice athletes.'
     },
     'a-at-b2': {
       hl: ['a1b2','a2b2'], ann: {k:['a1b2','a2b2'], cross:false},
-      txt: '<strong>Supplement effect | Experienced:</strong> Protein (5 kg) − Placebo (3 kg) = <strong style="color:#dc2626">+2 kg</strong>. A modest effect for experienced athletes.'
+      txt: '<strong>Supplement effect | Experienced:</strong> Protein (5 kg) - Placebo (3 kg) = <strong class="simple-effect-value">+2 kg</strong>. A modest effect for experienced athletes.'
     },
     'b-at-a1': {
       hl: ['a1b1','a1b2'], ann: {k:['a1b2','a1b1'], cross:true},
-      txt: '<strong>Experience effect | Placebo:</strong> Novice (4 kg) − Experienced (3 kg) = <strong style="color:#dc2626">+1 kg</strong>. Without supplementation, training status has minimal impact on gains.'
+      txt: '<strong>Experience effect | Placebo:</strong> Novice (4 kg) - Experienced (3 kg) = <strong class="simple-effect-value">+1 kg</strong>. Without supplementation, training status has minimal impact on gains.'
     },
     'b-at-a2': {
       hl: ['a2b1','a2b2'], ann: {k:['a2b2','a2b1'], cross:true},
-      txt: '<strong>Experience effect | Protein:</strong> Novice (12 kg) − Experienced (5 kg) = <strong style="color:#dc2626">+7 kg</strong>. Under protein supplementation, novices benefit dramatically more.'
+      txt: '<strong>Experience effect | Protein:</strong> Novice (12 kg) - Experienced (5 kg) = <strong class="simple-effect-value">+7 kg</strong>. Under protein supplementation, novices benefit dramatically more.'
     }
   };
 
@@ -1235,7 +1086,7 @@ function fmtP(p) {
     });
 
     document.getElementById('sme-readout').innerHTML =
-      `<div class="stat" style="font-family:var(--sans);font-size:.88rem;line-height:1.6">${cfg.txt}</div>`;
+      `<div class="stat anova-sme-stat">${cfg.txt}</div>`;
   }
 
   document.querySelectorAll('#sme-tabs .tab-btn').forEach(btn => {
