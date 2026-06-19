@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Non-Parametric Statistics - Week 5</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,300;1,8..60,400&family=JetBrains+Mono:wght@400;500&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/chapter.css">
+<link rel="stylesheet" href="../css/nonparametric.css">
+</head>
+<body>
+
+<header class="hero">
+  <div class="byline">Week 5 — Inferential Statistics</div>
+  <h1>Non-Parametric Statistics</h1>
+  <p class="subtitle">When your data is ordinal, categorical, or too skewed to meet parametric assumptions — these distribution-free methods let the data speak without forcing a normal distribution.</p>
+</header>
+
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#spearman">1. Spearman's Rank Correlation</a></li>
+    <li><a href="#chi-gof">2. Chi-Squared: Goodness-of-Fit</a></li>
+    <li><a href="#chi-ind">3. Chi-Squared: Test of Independence</a></li>
+    <li><a href="#logistic">4. Logistic Regression</a></li>
+    <li><a href="#logistic-demo">5. Interactive: Logistic vs. OLS</a></li>
+  </ol>
+</nav>
+
+<main class="article">
+
+<!-- ============================================================ -->
+<!-- SECTION 1: SPEARMAN -->
+<!-- ============================================================ -->
+<section id="spearman">
+  <h2><span class="section-num">1</span> Spearman's Rank Correlation \((\rho)\)</h2>
+  <p>Spearman's \(\rho\) measures the <strong>strength and direction of a monotonic relationship</strong> between two variables. A monotonic relationship simply means that as one variable increases, the other tends to consistently increase (or decrease) — even if the relationship is not a perfect straight line.</p>
+
+  <h3>When to Use Spearman Instead of Pearson</h3>
+  <div class="step-flow">
+    <div class="step">
+      <div class="step-title">Ordinal Data</div>
+      <div class="step-desc">Data consists of ranked categories (e.g., pain scales, satisfaction surveys, athletic rankings) rather than measured continuous values.</div>
+    </div>
+    <div class="step">
+      <div class="step-title">Skewed Distributions</div>
+      <div class="step-desc">One or both variables are severely non-normal (strongly skewed, heavy-tailed, or containing large outliers that distort the Pearson calculation).</div>
+    </div>
+    <div class="step">
+      <div class="step-title">Monotonic, Not Linear</div>
+      <div class="step-desc">The relationship is consistently directional but curves (e.g., drug dose and effect — increasing dose raises effect, but the rate of change slows). Pearson misses this.</div>
+    </div>
+  </div>
+
+  <h3>Step-by-Step Mechanics</h3>
+  <div class="step-flow">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-title">Rank Each Variable</div>
+      <div class="step-desc">Assign a rank (1 to \(n\)) to each variable independently. Rank 1 = smallest value. For <strong>ties</strong>, assign the average of the ranks they would have occupied (e.g., if two values tie for ranks 3 and 4, both receive rank 3.5).</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-title">Calculate Differences \(d_i\)</div>
+      <div class="step-desc">For each observation, subtract the rank of \(Y\) from the rank of \(X\):
+        \[d_i = \text{Rank}(X_i) - \text{Rank}(Y_i)\]
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-title">Apply the Formula</div>
+      <div class="step-desc">Square each difference, sum them all, and apply:
+        \[\rho = 1 - \frac{6\sum d_i^2}{n(n^2-1)}\]
+        This simplification holds exactly when there are no tied ranks.
+      </div>
+    </div>
+  </div>
+
+  <h3>Worked Example: Sleep Quality and Reaction-Time Performance</h3>
+  <p>Six participants were rated on average nightly sleep hours and a standardised reaction-time performance score (higher = better). Both variables are slightly skewed in the full sample, so Spearman's \(\rho\) is preferred over Pearson's \(r\).</p>
+
+  <table class="rank-table">
+    <thead>
+      <tr>
+        <th>Participant</th>
+        <th>Sleep (h)</th>
+        <th>Rank\(_S\)</th>
+        <th>Score</th>
+        <th>Rank\(_R\)</th>
+        <th>\(d_i\)</th>
+        <th>\(d_i^2\)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>P1</td><td>5.5</td><td>1</td><td>42</td><td>1</td><td class="d-zero">0</td><td>0</td></tr>
+      <tr><td>P2</td><td>6.0</td><td>2</td><td>55</td><td>3</td><td class="d-pos">−1</td><td>1</td></tr>
+      <tr><td>P3</td><td>6.5</td><td>3</td><td>51</td><td>2</td><td class="d-neg">+1</td><td>1</td></tr>
+      <tr><td>P4</td><td>7.0</td><td>4</td><td>62</td><td>4</td><td class="d-zero">0</td><td>0</td></tr>
+      <tr><td>P5</td><td>7.5</td><td>5</td><td>68</td><td>5</td><td class="d-zero">0</td><td>0</td></tr>
+      <tr><td>P6</td><td>8.5</td><td>6</td><td>84</td><td>6</td><td class="d-zero">0</td><td>0</td></tr>
+    </tbody>
+    <tfoot>
+      <tr><td colspan="6" class="tfoot-label">\(\sum d_i^2\)</td><td class="tfoot-sum">2</td></tr>
+    </tfoot>
+  </table>
+
+  <p>Wait — P2 scored rank 3 on Score but only rank 2 on Sleep, so \(d_2 = 2 - 3 = -1\) and \(d_2^2 = 1\). Substituting into the formula:</p>
+  <div class="math-block">
+    $$\rho = 1 - \frac{6 \times 2}{6(36-1)} = 1 - \frac{12}{210} = 1 - 0.057 = \mathbf{0.943}$$
+  </div>
+  <p>A \(\rho = 0.943\) indicates a <strong>very strong, positive monotonic relationship</strong>: participants who sleep more tend to score better on the reaction-time task.</p>
+
+  <h3>Handling Tied Ranks</h3>
+  <p>When ties exist (e.g., two participants both score 55), assign the <strong>mean of the tied ranks</strong>. If two observations tie for ranks 3 and 4, both receive rank 3.5. The simplified formula above loses a small amount of accuracy when there are many ties; in that case, use the full Pearson formula applied to the <em>ranks</em> instead of the raw values.</p>
+
+  <div class="callout intuition">
+    <div class="callout-label">Key Distinction — Monotonic vs. Linear</div>
+    Pearson's \(r\) demands a <strong>linear</strong> relationship: equal absolute changes in \(X\) must correspond to equal changes in \(Y\). Spearman's \(\rho\) only requires a <strong>monotonic</strong> relationship: as \(X\) increases, \(Y\) must <em>tend</em> to increase (or decrease), without requiring constant rates of change. A perfectly curved exponential relationship can have \(\rho = 1\) but \(r < 1\).
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-label">Common Misconception</div>
+    The formula squares the rank differences, so the resulting \(\rho\) is <strong>not</strong> always positive. When high ranks of \(X\) consistently pair with <em>low</em> ranks of \(Y\), the large \(d_i^2\) values can make \(\frac{6\sum d_i^2}{n(n^2-1)} > 1\), yielding a negative \(\rho\) — correctly indicating a strong <em>negative</em> monotonic relationship.
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 2: CHI-SQUARED GOODNESS OF FIT -->
+<!-- ============================================================ -->
+<section id="chi-gof">
+  <h2><span class="section-num">2</span> Chi-Squared Goodness-of-Fit Test</h2>
+  <p>The Chi-Squared (\(\chi^2\)) Goodness-of-Fit test answers: <em>"Does our observed sample distribution match an expected theoretical distribution?"</em> It applies when you have a single categorical variable and want to test whether each category occurs as frequently as a theory predicts.</p>
+
+  <h3>The Null Hypothesis</h3>
+  <p>The null hypothesis specifies the expected proportion \(p_k\) for each category \(k\). The most common version assumes a <strong>uniform distribution</strong> (all categories equally likely), but any theoretically motivated distribution can be used.</p>
+  <div class="math-block">
+    $$H_0: p_1 = p_2 = \cdots = p_k = \frac{1}{k} \quad \text{(uniform case)}$$
+  </div>
+
+  <h3>Expected Frequencies</h3>
+  <p>For each category, calculate the expected count if the null hypothesis were true:</p>
+  <div class="math-block">
+    $$E_i = N \times p_i$$
+  </div>
+  <p>For the uniform case with \(k\) categories and \(N\) total observations, this simplifies to \(E_i = N/k\) for all \(i\).</p>
+
+  <h3>The Test Statistic</h3>
+  <p>The \(\chi^2\) statistic measures the total discrepancy between observed and expected counts. It squares the differences so that positive and negative deviations both contribute positively, then scales by the expected count so that absolute differences are comparable across categories:</p>
+  <div class="math-block">
+    $$\chi^2 = \sum_{i=1}^{k} \frac{(O_i - E_i)^2}{E_i}$$
+  </div>
+
+  <h3>Degrees of Freedom and the Rule of 5</h3>
+  <div class="step-flow">
+    <div class="step">
+      <div class="step-num step-token">df</div>
+      <div class="step-title">Degrees of Freedom</div>
+      <div class="step-desc">For Goodness-of-Fit with \(k\) categories:
+        \[df = k - 1\]
+        We lose one degree of freedom because once you know the counts in \(k-1\) categories and the total \(N\), the last category is fully determined.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num step-token-sm">E≥5</div>
+      <div class="step-title">The Rule of 5</div>
+      <div class="step-desc">The \(\chi^2\) approximation is reliable only when every expected cell count \(E_i \ge 5\). If some cells have very small expected counts, consider combining adjacent categories or using an exact test (e.g., Fisher's exact test).</div>
+    </div>
+  </div>
+
+  <!-- INTERACTIVE MODULE: GoF -->
+  <h3>Interactive: Build the Chi-Squared Table</h3>
+  <p>A sports medicine clinic recorded \(n = 105\) acute injuries by day of the week. Adjust the observed counts and watch the chi-squared table recalculate live. Does injury risk differ significantly by day?</p>
+
+  <div class="figure-container" id="chi-gof-module">
+    <div class="fig-title">Chi-Squared Goodness-of-Fit — Day-of-Week Injury Calculator</div>
+
+    <p class="chi-scenario">
+      <strong>H\(_0\):</strong> Injuries are equally likely on each day &nbsp;→&nbsp;
+      Expected per day: \(E = 105/7 = 15.0\)
+    </p>
+
+    <div class="chi-table-scroll">
+      <table class="chi-calc-table" id="gof-table">
+        <thead>
+          <tr>
+            <th>Day</th>
+            <th>Observed \((O)\)</th>
+            <th>Expected \((E)\)</th>
+            <th>\(O - E\)</th>
+            <th>\((O-E)^2\)</th>
+            <th class="contrib-head">Contribution \(\frac{(O-E)^2}{E}\)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr data-day="Monday"   ><td>Monday</td>   <td><input class="chi-input gof-obs" type="number" min="0" max="105" value="18"></td><td class="gof-e">15.0</td><td class="gof-diff"></td><td class="gof-sq"></td><td class="gof-contrib"></td></tr>
+          <tr data-day="Tuesday"  ><td>Tuesday</td>  <td><input class="chi-input gof-obs" type="number" min="0" max="105" value="12"></td><td class="gof-e">15.0</td><td class="gof-diff"></td><td class="gof-sq"></td><td class="gof-contrib"></td></tr>
+          <tr data-day="Wednesday"><td>Wednesday</td><td><input class="chi-input gof-obs" type="number" min="0" max="105" value="15"></td><td class="gof-e">15.0</td><td class="gof-diff"></td><td class="gof-sq"></td><td class="gof-contrib"></td></tr>
+          <tr data-day="Thursday" ><td>Thursday</td> <td><input class="chi-input gof-obs" type="number" min="0" max="105" value="10"></td><td class="gof-e">15.0</td><td class="gof-diff"></td><td class="gof-sq"></td><td class="gof-contrib"></td></tr>
+          <tr data-day="Friday"   ><td>Friday</td>   <td><input class="chi-input gof-obs" type="number" min="0" max="105" value="22"></td><td class="gof-e">15.0</td><td class="gof-diff"></td><td class="gof-sq"></td><td class="gof-contrib"></td></tr>
+          <tr data-day="Saturday" ><td>Saturday</td> <td><input class="chi-input gof-obs" type="number" min="0" max="105" value="17"></td><td class="gof-e">15.0</td><td class="gof-diff"></td><td class="gof-sq"></td><td class="gof-contrib"></td></tr>
+          <tr data-day="Sunday"   ><td>Sunday</td>   <td><input class="chi-input gof-obs" type="number" min="0" max="105" value="11"></td><td class="gof-e">15.0</td><td class="gof-diff"></td><td class="gof-sq"></td><td class="gof-contrib"></td></tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <th>Total</th>
+            <th id="gof-obs-total" class="tfoot-total">—</th>
+            <th>105.0</th>
+            <th>0.0</th>
+            <th>—</th>
+            <th id="gof-chi2-cell" class="chi2-total-cell">χ² = —</th>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <div class="chi-result-bar" id="gof-result-bar">
+      <div class="chi-stat-item"><span class="chi-stat-label">df</span><span class="chi-stat-val" id="gof-df">6</span></div>
+      <div class="chi-stat-item"><span class="chi-stat-label">χ²</span><span class="chi-stat-val" id="gof-chi2">—</span></div>
+      <div class="chi-stat-item"><span class="chi-stat-label">p-value</span><span class="chi-stat-val" id="gof-pval">—</span></div>
+      <div class="chi-verdict" id="gof-verdict"></div>
+    </div>
+
+    <div class="controls">
+      <button class="run-btn secondary" id="gof-reset">Reset Defaults</button>
+      <span class="chi-warning is-hidden" id="gof-warning">⚠ Counts must sum to 105</span>
+    </div>
+
+    <div class="check-card" style="margin-top:16px">
+      <strong>Try this:</strong> Drag Friday up to 35 and Sunday down to 5. Does the \(\chi^2\) cross the critical value? What does a large contribution cell (orange/red) tell you about that category?
+    </div>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-label">Misconception: Chi-Squared Is Always Positive</div>
+    Because the formula squares \((O - E)\), every cell contributes a non-negative value. Therefore \(\chi^2 \ge 0\) always. A very small \(\chi^2\) (near 0) means observed counts are very close to expected — there is little evidence against \(H_0\).
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 3: CHI-SQUARED INDEPENDENCE -->
+<!-- ============================================================ -->
+<section id="chi-ind">
+  <h2><span class="section-num">3</span> Chi-Squared Test of Independence</h2>
+  <p>The Test of Independence asks: <em>"Are two categorical variables associated, or are they statistically independent?"</em> The data are arranged in a <strong>contingency table</strong> cross-tabulating the two variables.</p>
+
+  <h3>Structure of a Contingency Table</h3>
+  <p>For two categorical variables with \(r\) row categories and \(c\) column categories, observations fall into an \(r \times c\) grid. The row totals (\(R_i\)), column totals (\(C_j\)), and grand total (\(N\)) determine the expected counts.</p>
+
+  <h3>Expected Frequencies Under Independence</h3>
+  <p>If the two variables are truly independent, knowing an observation's row category gives no information about its column category. Under this null, the expected count in cell \((i, j)\) is:</p>
+  <div class="math-block">
+    $$E_{ij} = \frac{R_i \times C_j}{N}$$
+  </div>
+  <p>Intuitively: if row \(i\) contains a fraction \(R_i/N\) of all observations, and column \(j\) contains a fraction \(C_j/N\) of all observations, then — under independence — the fraction expected in cell \((i,j)\) is their product.</p>
+
+  <h3>Test Statistic and Degrees of Freedom</h3>
+  <div class="math-block">
+    $$\chi^2 = \sum_{i,j} \frac{(O_{ij} - E_{ij})^2}{E_{ij}} \qquad df = (r-1)(c-1)$$
+  </div>
+  <div class="callout intuition">
+    <div class="callout-label">Why (r−1)(c−1)?</div>
+    Once you know the row and column totals, how many cells can vary freely? If you fill in \((r-1)\) rows and \((c-1)\) columns, all remaining cells are automatically determined by the marginal totals. The number of freely-varying cells is \((r-1)(c-1)\).
+  </div>
+
+  <!-- INTERACTIVE MODULE: Independence -->
+  <h3>Interactive: Contingency Table Calculator</h3>
+  <p>A rehabilitation study compared two treatment approaches (Surgery vs. Conservative Management) and tracked three recovery outcomes for \(N = 100\) patients. Edit the observed counts in the blue cells — the expected frequencies, chi-squared contributions, and final result update automatically.</p>
+
+  <div class="figure-container" id="chi-ind-module">
+    <div class="fig-title">Chi-Squared Test of Independence — Recovery Outcome Calculator</div>
+
+    <div class="ind-grid">
+
+      <!-- Observed table -->
+      <div class="ind-panel">
+        <div class="ind-panel-title">Observed Frequencies \((O_{ij})\)</div>
+        <div class="chi-table-scroll">
+          <table class="chi-obs-table" id="ind-obs-table">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Full Recovery</th>
+                <th>Partial</th>
+                <th>No Recovery</th>
+                <th class="total-col">Row Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th>Surgery</th>
+                <td><input class="chi-input ind-obs" type="number" min="0" max="200" value="40" data-r="0" data-c="0"></td>
+                <td><input class="chi-input ind-obs" type="number" min="0" max="200" value="7"  data-r="0" data-c="1"></td>
+                <td><input class="chi-input ind-obs" type="number" min="0" max="200" value="3"  data-r="0" data-c="2"></td>
+                <td class="row-total" id="ind-row-0">50</td>
+              </tr>
+              <tr>
+                <th>Conservative</th>
+                <td><input class="chi-input ind-obs" type="number" min="0" max="200" value="20" data-r="1" data-c="0"></td>
+                <td><input class="chi-input ind-obs" type="number" min="0" max="200" value="18" data-r="1" data-c="1"></td>
+                <td><input class="chi-input ind-obs" type="number" min="0" max="200" value="12" data-r="1" data-c="2"></td>
+                <td class="row-total" id="ind-row-1">50</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr>
+                <th>Col Total</th>
+                <td id="ind-col-0">60</td>
+                <td id="ind-col-1">25</td>
+                <td id="ind-col-2">15</td>
+                <td id="ind-n">100</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- Expected table -->
+      <div class="ind-panel">
+        <div class="ind-panel-title">Expected Frequencies \((E_{ij} = R_i \times C_j / N)\)</div>
+        <div class="chi-table-scroll">
+          <table class="chi-exp-table" id="ind-exp-table">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Full Recovery</th>
+                <th>Partial</th>
+                <th>No Recovery</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th>Surgery</th>
+                <td id="exp-0-0" class="exp-cell">—</td>
+                <td id="exp-0-1" class="exp-cell">—</td>
+                <td id="exp-0-2" class="exp-cell">—</td>
+              </tr>
+              <tr>
+                <th>Conservative</th>
+                <td id="exp-1-0" class="exp-cell">—</td>
+                <td id="exp-1-1" class="exp-cell">—</td>
+                <td id="exp-1-2" class="exp-cell">—</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="exp-note">Cells highlighted in <span class="exp-low-badge">red</span> have E &lt; 5 — the approximation may be unreliable.</p>
+      </div>
+
+      <!-- Contribution table -->
+      <div class="ind-panel">
+        <div class="ind-panel-title">Contributions \(\frac{(O-E)^2}{E}\)</div>
+        <div class="chi-table-scroll">
+          <table class="chi-contrib-table" id="ind-contrib-table">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Full Recovery</th>
+                <th>Partial</th>
+                <th>No Recovery</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th>Surgery</th>
+                <td id="ctr-0-0" class="chi-contrib">—</td>
+                <td id="ctr-0-1" class="chi-contrib">—</td>
+                <td id="ctr-0-2" class="chi-contrib">—</td>
+              </tr>
+              <tr>
+                <th>Conservative</th>
+                <td id="ctr-1-0" class="chi-contrib">—</td>
+                <td id="ctr-1-1" class="chi-contrib">—</td>
+                <td id="ctr-1-2" class="chi-contrib">—</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="exp-note">Cells highlighted in <span class="ctr-hi-badge">orange</span> are the largest contributors to \(\chi^2\).</p>
+      </div>
+
+    </div><!-- .ind-grid -->
+
+    <div class="chi-result-bar" id="ind-result-bar">
+      <div class="chi-stat-item"><span class="chi-stat-label">df</span><span class="chi-stat-val" id="ind-df">2</span></div>
+      <div class="chi-stat-item"><span class="chi-stat-label">χ²</span><span class="chi-stat-val" id="ind-chi2">—</span></div>
+      <div class="chi-stat-item"><span class="chi-stat-label">p-value</span><span class="chi-stat-val" id="ind-pval">—</span></div>
+      <div class="chi-verdict" id="ind-verdict"></div>
+    </div>
+
+    <div class="controls">
+      <button class="run-btn secondary" id="ind-reset">Reset Defaults</button>
+    </div>
+
+    <div class="check-card" style="margin-top:16px">
+      <strong>Try this:</strong> Make both rows identical (e.g., 40, 7, 3 for both). What happens to \(\chi^2\)? This is the limiting case where the treatment has <em>no</em> association with outcome — exactly what \(H_0\) assumes.
+    </div>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-label">Critical Assumption: Expected Frequencies ≥ 5</div>
+    The chi-squared distribution is a <strong>continuous approximation</strong> to what is actually a discrete count process. This approximation breaks down when expected cell counts are very small. As a rule of thumb: all \(E_{ij} \ge 5\). If not, merge categories or use Fisher's exact test for 2×2 tables.
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 4: LOGISTIC REGRESSION -->
+<!-- ============================================================ -->
+<section id="logistic">
+  <h2><span class="section-num">4</span> Logistic Regression</h2>
+  <p>Logistic regression models the probability of a <strong>binary outcome</strong> (\(Y \in \{0,1\}\)) as a function of one or more predictors. It is the standard tool when the dependent variable is categorical — pass/fail, healed/not healed, defaulted/paid.</p>
+
+  <h3>4.1 Why OLS Fails for Binary Outcomes</h3>
+  <p>When we force an ordinary linear regression model (\(Y = \beta_0 + \beta_1 X + \varepsilon\)) onto binary data, we create a <strong>Linear Probability Model (LPM)</strong>. This causes three structural problems:</p>
+  <div class="lpm-grid">
+    <div class="lpm-card">
+      <div class="lpm-icon lpm-red">!</div>
+      <div class="lpm-title">Nonsensical Predictions</div>
+      <div class="lpm-desc">The line extends to \(-\infty\) and \(+\infty\), so predicted "probabilities" can be below 0 or above 1. A student with 0 study hours might be predicted to have a \(-20\%\) chance of passing — mathematically absurd.</div>
+    </div>
+    <div class="lpm-card">
+      <div class="lpm-icon lpm-orange">~</div>
+      <div class="lpm-title">Heteroscedasticity</div>
+      <div class="lpm-desc">For binary \(Y\), the variance of the error depends on \(X\): \(\text{Var}(Y|X) = p(1-p)\), which changes as \(p\) changes. This violates the constant-variance assumption that OLS requires for valid inference.</div>
+    </div>
+    <div class="lpm-card">
+      <div class="lpm-icon lpm-blue">≠</div>
+      <div class="lpm-title">Non-Normal Residuals</div>
+      <div class="lpm-desc">Because \(Y\) can only take values 0 or 1, residuals can only take two values for any given \(X\). They cannot be normally distributed, which invalidates standard OLS t-tests and confidence intervals.</div>
+    </div>
+  </div>
+
+  <h3>4.2 The Logit Link: From Probability to a Linear Scale</h3>
+  <p>To fix these issues, we transform probability into a quantity that can range from \(-\infty\) to \(+\infty\) — three conceptual steps:</p>
+
+  <div class="logit-chain">
+    <div class="logit-step">
+      <div class="logit-step-num">1</div>
+      <div class="logit-step-name">Probability \(p\)</div>
+      <div class="logit-step-range">Range: \([0, 1]\)</div>
+      <div class="logit-step-formula">\(p = P(Y=1|X)\)</div>
+    </div>
+    <div class="logit-arrow">→</div>
+    <div class="logit-step">
+      <div class="logit-step-num">2</div>
+      <div class="logit-step-name">Odds</div>
+      <div class="logit-step-range">Range: \([0, +\infty)\)</div>
+      <div class="logit-step-formula">\(\text{Odds} = \dfrac{p}{1-p}\)</div>
+    </div>
+    <div class="logit-arrow">→</div>
+    <div class="logit-step">
+      <div class="logit-step-num">3</div>
+      <div class="logit-step-name">Log-Odds (Logit)</div>
+      <div class="logit-step-range">Range: \((-\infty, +\infty)\)</div>
+      <div class="logit-step-formula">\(\ln\!\left(\dfrac{p}{1-p}\right)\)</div>
+    </div>
+  </div>
+
+  <p>By setting the <strong>log-odds equal to a linear model</strong>, we get a framework whose inputs are unbounded but whose outputs always map to valid probabilities:</p>
+  <div class="math-block">
+    $$\underbrace{\ln\!\left(\frac{p}{1-p}\right)}_{\text{logit}(p)} = \beta_0 + \beta_1 X$$
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">Intuition — The Odds Example</div>
+    If the probability of passing an exam is \(p = 0.80\), the odds are \(\frac{0.80}{0.20} = 4\) (read: "4 to 1 odds"). The log-odds are \(\ln(4) \approx 1.39\). This transformation is symmetric around 0: \(p = 0.50\) gives log-odds = 0; \(p > 0.50\) gives positive log-odds; \(p < 0.50\) gives negative log-odds.
+  </div>
+
+  <h3>4.3 The Logistic (Sigmoid) Function</h3>
+  <p>Solving the logit equation for \(p\) gives the <strong>logistic function</strong>, which maps any linear combination of predictors back into a valid probability:</p>
+  <div class="math-block">
+    $$p = \frac{1}{1 + e^{-(\beta_0 + \beta_1 X)}}$$
+  </div>
+  <p>This produces the classic <strong>S-shaped (sigmoid) curve</strong>. No matter how large or small \(\beta_0 + \beta_1 X\) becomes, the predicted probability always stays within \([0, 1]\) and approaches the bounds asymptotically — never crossing them.</p>
+
+  <div class="sigmoid-props">
+    <div class="sig-prop">
+      <div class="sig-prop-label">At the midpoint</div>
+      <div class="sig-prop-val">When \(\beta_0 + \beta_1 X = 0\), \(p = 0.5\). This is the <strong>decision boundary</strong>.</div>
+    </div>
+    <div class="sig-prop">
+      <div class="sig-prop-label">Left tail</div>
+      <div class="sig-prop-val">As \(\beta_0 + \beta_1 X \to -\infty\), \(p \to 0\).</div>
+    </div>
+    <div class="sig-prop">
+      <div class="sig-prop-label">Right tail</div>
+      <div class="sig-prop-val">As \(\beta_0 + \beta_1 X \to +\infty\), \(p \to 1\).</div>
+    </div>
+  </div>
+
+  <h3>4.4 Estimation via Maximum Likelihood (MLE)</h3>
+  <p>OLS minimises the Sum of Squared Errors. Logistic regression instead uses <strong>Maximum Likelihood Estimation</strong>: it finds the \(\beta\) values that make the observed pattern of 0s and 1s as probable as possible.</p>
+  <div class="math-block">
+    $$\ln L(\boldsymbol{\beta}) = \sum_{i=1}^{n} \left[y_i \ln(p_i) + (1-y_i)\ln(1-p_i)\right]$$
+  </div>
+  <p>Where \(p_i = \frac{1}{1 + e^{-(\beta_0 + \beta_1 x_i)}}\). Because there is no closed-form solution, MLE is solved iteratively using algorithms like <strong>Newton-Raphson</strong> or gradient ascent. Modern software handles this automatically.</p>
+
+  <div class="callout intuition">
+    <div class="callout-label">MLE Intuition</div>
+    Imagine you are trying to position the S-curve so that it assigns high probability to each observed 1 and low probability to each observed 0. MLE finds the exact curve position that makes the entire observed dataset <em>most likely</em> to have occurred.
+  </div>
+
+  <h3>4.5 Interpreting Coefficients — Three Levels</h3>
+  <p>A logistic regression coefficient \(\beta_1\) can be interpreted at three levels, each progressively more intuitive but requiring more computation:</p>
+
+  <table class="coef-table">
+    <thead>
+      <tr>
+        <th>Level</th>
+        <th>Metric</th>
+        <th>Interpretation Principle</th>
+        <th>Example (\(\beta_1 = 0.40\))</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="coef-badge badge-lo">Level 1</span></td>
+        <td><strong>Log-Odds \((\beta_1)\)</strong></td>
+        <td>For each 1-unit increase in \(X\), the <em>log-odds</em> of the outcome increase by \(\beta_1\).</td>
+        <td class="example-cell">"Each extra study hour increases log-odds of passing by 0.40." — Mathematically precise, but unintuitive.</td>
+      </tr>
+      <tr>
+        <td><span class="coef-badge badge-md">Level 2</span></td>
+        <td><strong>Odds Ratio \((e^{\beta_1})\)</strong></td>
+        <td>Exponentiating gives the <em>multiplicative factor</em> by which the odds change per 1-unit increase.</td>
+        <td class="example-cell">\(e^{0.40} \approx 1.49\). "Each extra hour multiplies the odds of passing by 1.49 — a 49% increase in odds."</td>
+      </tr>
+      <tr>
+        <td><span class="coef-badge badge-hi">Level 3</span></td>
+        <td><strong>Probability change</strong></td>
+        <td>The change in \(p\) is <strong>non-linear</strong> and depends on the starting value of \(X\). Plug specific values into the full equation.</td>
+        <td class="example-cell">Going from 4 to 5 hours raises \(p\) from 0.31 to 0.42 (+11%). Going from 7 to 8 hours raises \(p\) from 0.74 to 0.82 (+8%). The effect tapers near the extremes.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout warning">
+    <div class="callout-label">Critical Distinction: Odds Ratio ≠ Relative Risk</div>
+    Students frequently confuse the Odds Ratio with the Relative Risk (ratio of probabilities). <strong>Odds Ratio</strong>: "Your ratio of success-to-failure is 1.49× as high." <strong>Relative Risk</strong>: "You are 1.49× as <em>likely</em> to succeed." These are only approximately equal when the baseline event is rare (the "Rare Disease Assumption," roughly \(p_0 < 10\%\)). For common events, the Odds Ratio always overstates how much more likely the event is.
+  </div>
+
+  <h3>4.6 Evaluating Model Fit</h3>
+  <p>Because logistic regression has no total sum of squares to partition, we cannot compute a standard \(R^2\). Instead, we use:</p>
+
+  <div class="fit-grid">
+    <div class="fit-card">
+      <div class="fit-title">McFadden's Pseudo-\(R^2\)</div>
+      <div class="fit-formula">\(R^2_{\text{McF}} = 1 - \dfrac{\ln L_{\text{full}}}{\ln L_{\text{null}}}\)</div>
+      <div class="fit-desc">Compares the log-likelihood of the fitted model to an intercept-only (null) model. Values between 0.2 and 0.4 are considered excellent — this is a much lower numeric threshold than ordinary \(R^2\), so don't interpret it the same way.</div>
+    </div>
+    <div class="fit-card">
+      <div class="fit-title">Deviance</div>
+      <div class="fit-formula">\(D = -2\ln L\)</div>
+      <div class="fit-desc">The logistic analogue of residual sum of squares. Adding a predictor reduces deviance. The <strong>likelihood ratio test</strong> uses the difference in deviance between two nested models, which follows a \(\chi^2\) distribution under \(H_0\).</div>
+    </div>
+    <div class="fit-card">
+      <div class="fit-title">Confusion Matrix</div>
+      <div class="fit-formula"><em>Predicted vs. Actual</em></div>
+      <div class="fit-desc">By applying a decision threshold (usually \(p \ge 0.5 \Rightarrow \hat{Y} = 1\)), we cross-tabulate predictions against true outcomes. Key metrics: <strong>Sensitivity</strong> (true positive rate) and <strong>Specificity</strong> (true negative rate). The optimal threshold depends on the relative cost of each error type.</div>
+    </div>
+  </div>
+
+  <!-- Confusion matrix example -->
+  <h4>Example: Confusion Matrix</h4>
+  <p>With a threshold of \(p \ge 0.5\):</p>
+  <div class="cm-wrap">
+    <table class="cm-table">
+      <thead>
+        <tr>
+          <th colspan="2" rowspan="2" class="cm-corner"></th>
+          <th colspan="2" class="cm-header-actual">Actual</th>
+        </tr>
+        <tr>
+          <th class="cm-pos">Positive (1)</th>
+          <th class="cm-neg">Negative (0)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th rowspan="2" class="cm-header-pred">Predicted</th>
+          <th class="cm-pos">Positive (1)</th>
+          <td class="cm-tp">TP<br><small>True Positive</small></td>
+          <td class="cm-fp">FP<br><small>False Positive (Type I)</small></td>
+        </tr>
+        <tr>
+          <th class="cm-neg">Negative (0)</th>
+          <td class="cm-fn">FN<br><small>False Negative (Type II)</small></td>
+          <td class="cm-tn">TN<br><small>True Negative</small></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="cm-legend">
+      <div><strong>Sensitivity</strong> = TP / (TP + FN) — correctly identifies true cases</div>
+      <div><strong>Specificity</strong> = TN / (TN + FP) — correctly identifies true non-cases</div>
+      <div><strong>Accuracy</strong> = (TP + TN) / N — overall correct classifications</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 5: INTERACTIVE LOGISTIC vs OLS DEMO -->
+<!-- ============================================================ -->
+<section id="logistic-demo">
+  <h2><span class="section-num">5</span> Interactive: Logistic vs. OLS</h2>
+  <p>Twenty-five students were recorded by study hours and exam outcome (Pass = 1, Fail = 0). The plot shows both the OLS regression line and the logistic S-curve overlaid on the data. Explore how the curves differ and where OLS makes nonsensical predictions.</p>
+
+  <div class="figure-container">
+    <div class="fig-title">Study Hours vs. Exam Outcome — OLS Linear Probability Model vs. Logistic Regression</div>
+
+    <div class="demo-cols">
+      <div>
+        <div class="demo-canvas-wrap">
+          <canvas id="logistic-canvas" width="520" height="380" aria-label="Binary scatter plot with OLS line and logistic sigmoid curve"></canvas>
+        </div>
+        <div class="method-legend" style="margin-top:10px">
+          <span><span class="ml-dot dot-blue"></span>OLS / Linear Probability Model</span>
+          <span><span class="ml-dot dot-green"></span>Logistic sigmoid</span>
+          <span><span class="ml-dot" style="background:#059669;border:2px solid #059669;border-radius:0;height:10px;width:10px;display:inline-block"></span> Pass</span>
+          <span><span class="ml-dot dot-red"></span>Fail</span>
+        </div>
+        <div class="controls">
+          <div class="control-group">
+            <label for="lg-b0">Logistic \(\beta_0\) (intercept)</label>
+            <input id="lg-b0" type="range" min="-12" max="2" step="0.1" value="-5.0">
+            <span class="val" id="lg-b0-val">−5.0</span>
+          </div>
+          <div class="control-group">
+            <label for="lg-b1">Logistic \(\beta_1\) (slope)</label>
+            <input id="lg-b1" type="range" min="0" max="3" step="0.05" value="1.0">
+            <span class="val" id="lg-b1-val">1.00</span>
+          </div>
+          <button class="run-btn" id="lg-fit" type="button">Fit MLE</button>
+          <button class="run-btn secondary" id="lg-reset" type="button">Reset</button>
+          <button class="run-btn secondary" id="lg-toggle-ols" type="button">Hide OLS</button>
+        </div>
+      </div>
+
+      <div class="demo-right">
+        <div class="readout-box">
+          <strong>OLS (fixed):</strong> <span id="lg-ols-eq">—</span><br>
+          <strong>Logistic:</strong> <span id="lg-log-eq">—</span><br>
+          <hr style="margin:8px 0;border-color:var(--border)">
+          <strong>OLS predicts p &lt; 0 when:</strong> <span id="lg-ols-neg">—</span><br>
+          <strong>OLS predicts p &gt; 1 when:</strong> <span id="lg-ols-gt1">—</span><br>
+          <hr style="margin:8px 0;border-color:var(--border)">
+          <strong>Decision boundary \((p=0.5)\):</strong> <span id="lg-boundary">—</span><br>
+          <strong>Log-likelihood:</strong> <span id="lg-ll">—</span>
+        </div>
+
+        <div class="check-card">
+          <strong>Observe:</strong> The <span style="color:#2563eb;font-weight:600">OLS line</span> enters the red-shaded regions — predicting probabilities below 0 and above 1. The <span style="color:#059669;font-weight:600">logistic curve</span> always stays within [0, 1] and transitions smoothly from near-0 to near-1.
+        </div>
+        <div class="check-card">
+          <strong>Fit MLE:</strong> Click <em>Fit MLE</em> to let the algorithm find the optimal \(\beta_0\) and \(\beta_1\) via gradient ascent on the log-likelihood. Notice the curve shifts to maximise the probability assigned to the actual outcomes.
+        </div>
+        <div class="check-card">
+          <strong>Try this:</strong> Increase \(\beta_1\) (steeper slope). How does the S-curve narrow? A very steep curve acts almost like a step function — certain classification if you know the exact threshold, but no uncertainty in the middle region.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <p>BPK 304w · Inquiry and Measurement — Non-Parametric Statistics</p>
+</footer>
+
+<script src="../js/utils.js"></script>
+<script src="../js/demo-chi-squared.js"></script>
+<script src="../js/demo-logistic-vs-ols.js"></script>
+<script>
+renderMathInElement(document.body, {
+  delimiters: [
+    {left:'$$', right:'$$', display:true},
+    {left:'\\(', right:'\\)', display:false}
+  ]
+});
+</script>
+</body>
+</html>
