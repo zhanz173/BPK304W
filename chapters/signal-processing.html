@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Biological Signal Acquisition - Week 6</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,300;1,8..60,400&family=JetBrains+Mono:wght@400;500&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/chapter.css">
+<link rel="stylesheet" href="../css/signal-processing.css">
+</head>
+<body>
+
+<header class="hero">
+  <div class="byline">Week 6 - Biological Signal Processing</div>
+  <h1>From Analog Physiology to Digital Data</h1>
+  <p class="subtitle">Digital signal and aliasing fundamentals</p>
+</header>
+
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#signals">1. Biological Signals</a></li>
+    <li><a href="#pipeline">2. Acquisition Pipeline</a></li>
+    <li><a href="#conditioning">3. Analog Conditioning</a></li>
+    <li><a href="#adc">4. A/D Conversion</a></li>
+    <li><a href="#quantization-demo">5. Interactive: Bit Depth</a></li>
+    <li><a href="#sampling">6. Sampling &amp; Nyquist</a></li>
+    <li><a href="#aliasing-demo">7. Interactive: Aliasing</a></li>
+    <li><a href="#range">8. Clipping &amp; Dynamic Range</a></li>
+    <li><a href="#quiz">9. Check Your Understanding</a></li>
+  </ol>
+</nav>
+
+<main class="article">
+
+<section id="signals">
+  <h2><span class="section-num">1</span> What Is a Biological Signal?</h2>
+  <p>A <strong>signal</strong> is a measurement that changes over time or space. In biomedical physiology and kinesiology, the changing quantity may be electrical activity, force, pressure, motion, temperature, flow, or joint angle.</p>
+  <p>The original physiological event is usually <strong>analog</strong>: it exists continuously in time and can take any value within a physical range. A computer cannot store that continuous event directly. It stores a finite list of numbers measured at specific instants.</p>
+
+  <table class="comparison-table">
+    <thead>
+      <tr><th>Signal</th><th>Physiological Source</th><th>Typical Sensor</th><th>Common Units</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>EMG</td><td>Muscle fiber action potentials</td><td>Surface or intramuscular electrodes</td><td>mV or µV</td></tr>
+      <tr><td>ECG/EKG</td><td>Cardiac electrical activity</td><td>Surface electrodes</td><td>mV</td></tr>
+      <tr><td>EEG</td><td>Cortical electrical activity</td><td>Scalp electrodes</td><td>µV</td></tr>
+      <tr><td>Ground reaction force</td><td>Foot-floor interaction</td><td>Force plate</td><td>N</td></tr>
+      <tr><td>Joint angle</td><td>Segment rotation</td><td>Goniometer, IMU, motion capture</td><td>degrees or radians</td></tr>
+      <tr><td>Respiratory flow</td><td>Air movement</td><td>Flow transducer</td><td>L/s</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout intuition">
+    <div class="callout-label">Core Idea</div>
+    The computer only sees numbers. Physiological interpretation depends on how those numbers were acquired, sampled, filtered, calibrated, and documented.
+  </div>
+
+  <h3>Signal, Noise, and Artefact</h3>
+  <div class="step-flow">
+    <div class="step">
+      <div class="step-num step-token">S</div>
+      <div class="step-title">Signal</div>
+      <div class="step-desc">The part of the recording that reflects the process of interest, such as tibialis anterior EMG timing during gait.</div>
+    </div>
+    <div class="step">
+      <div class="step-num step-token">N</div>
+      <div class="step-title">Noise</div>
+      <div class="step-desc">Unwanted variation that is not tied to the process of interest, such as electrical interference from nearby equipment.</div>
+    </div>
+    <div class="step">
+      <div class="step-num step-token">A</div>
+      <div class="step-title">Artefact</div>
+      <div class="step-desc">Structured distortion caused by the measurement process, such as electrode cable motion or sensor slip.</div>
+    </div>
+  </div>
+</section>
+
+<section id="pipeline">
+  <h2><span class="section-num">2</span> From the Body to the Computer</h2>
+  <p>Most biological recordings follow the same path. Each stage can improve the final data, but each stage can also damage it.</p>
+
+  <div class="pipeline" aria-label="Signal acquisition pipeline">
+    <div class="pipe-step"><span>1</span><strong>Physiological event</strong><small>Muscle voltage, force, angle, flow, pressure</small></div>
+    <div class="pipe-arrow">to</div>
+    <div class="pipe-step"><span>2</span><strong>Sensor / transducer</strong><small>Turns the physical event into voltage</small></div>
+    <div class="pipe-arrow">to</div>
+    <div class="pipe-step"><span>3</span><strong>Analog conditioning</strong><small>Amplify, filter, isolate, offset-correct</small></div>
+    <div class="pipe-arrow">to</div>
+    <div class="pipe-step"><span>4</span><strong>A/D conversion</strong><small>Sample and quantize</small></div>
+    <div class="pipe-arrow">to</div>
+    <div class="pipe-step"><span>5</span><strong>Digital signal</strong><small>A sequence of stored numbers</small></div>
+  </div>
+
+  <h3>Sensors Convert Energy</h3>
+  <p>A <strong>sensor</strong> detects a biological or physical event. A <strong>transducer</strong> converts one form of energy into another, usually into an electrical voltage that the data-acquisition system can read.</p>
+  <table class="comparison-table">
+    <thead>
+      <tr><th>Sensor</th><th>What It Converts</th><th>Example Use</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Surface electrodes</td><td>Ionic current in tissue to voltage difference</td><td>EMG, ECG, EEG</td></tr>
+      <tr><td>Strain gauges</td><td>Mechanical deformation to resistance change</td><td>Force plates, load cells</td></tr>
+      <tr><td>Potentiometers</td><td>Position to voltage</td><td>Joint angle systems</td></tr>
+      <tr><td>Accelerometers</td><td>Acceleration to voltage or digital output</td><td>IMUs, activity monitors</td></tr>
+      <tr><td>Pressure transducers</td><td>Pressure to voltage</td><td>Blood pressure, plantar pressure</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout warning">
+    <div class="callout-label">Example: EMG Electrodes</div>
+    Surface EMG is not a direct reading from one motor unit. It is a mixed voltage produced by many muscle fibers, affected by electrode placement, skin preparation, subcutaneous fat, movement, and cross-talk from nearby muscles.
+  </div>
+</section>
+
+<section id="conditioning">
+  <h2><span class="section-num">3</span> Analog Signal Conditioning</h2>
+  <p>The signal leaving a sensor is often tiny, noisy, shifted away from zero, or mismatched to the input range of the data acquisition board. <strong>Analog conditioning</strong> prepares the voltage before digitization.</p>
+
+  <div class="signal-grid">
+    <div class="signal-card">
+      <h3>Amplification</h3>
+      <p>Small signals such as EEG and EMG may need gain before entering the A/D converter. Amplification helps the signal use more of the available input range.</p>
+    </div>
+    <div class="signal-card">
+      <h3>Offset Removal</h3>
+      <p>A constant voltage bias can push the recording away from zero. Removing the offset keeps the useful changes centered in the measurable range.</p>
+    </div>
+    <div class="signal-card">
+      <h3>Analog Filtering</h3>
+      <p>Low-pass, high-pass, or band-pass filters can reduce unwanted frequencies before the data become digital. The anti-aliasing filter is the most important example.</p>
+    </div>
+    <div class="signal-card">
+      <h3>Isolation</h3>
+      <p>Isolation protects the participant and equipment by preventing unsafe electrical pathways during biological recordings.</p>
+    </div>
+  </div>
+
+  <div class="callout intuition">
+    <div class="callout-label">Why Amplification Matters</div>
+    If a board accepts -10 V to +10 V but an EMG signal only spans -0.005 V to +0.005 V, most of the available digital codes are wasted on voltages the signal never reaches. Appropriate gain improves practical resolution.
+  </div>
+</section>
+
+<section id="adc">
+  <h2><span class="section-num">4</span> Analog-to-Digital Conversion</h2>
+  <p>An <strong>analog-to-digital converter</strong>, or ADC, turns a continuous voltage into a digital sequence. It performs two separate operations:</p>
+
+  <div class="step-flow">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-title">Sampling</div>
+      <div class="step-desc">Choose the instants in time when the voltage will be measured.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-title">Quantization</div>
+      <div class="step-desc">Round each measured voltage to the nearest available digital level.</div>
+    </div>
+  </div>
+
+  <div class="math-block">
+    $$\text{Analog voltage } x(t) \rightarrow \text{digital samples } x[0], x[1], x[2], \ldots, x[n]$$
+  </div>
+
+  <p>The square brackets remind us that a digital signal is indexed by sample number. To convert sample number back into time, we need the sampling rate.</p>
+</section>
+
+<section id="quantization-demo">
+  <h2><span class="section-num">5</span> Interactive: Bit Depth and Quantization</h2>
+  <p>Quantization rounds a measured voltage to the nearest allowed level. Low bit depth creates large voltage steps; high bit depth makes the digital trace closely follow the analog signal. This figure uses dense sampling so the slider isolates voltage resolution rather than sampling rate.</p>
+
+  <div class="figure-container">
+    <div class="fig-title">Analog Sine Wave vs. Quantized Digital Values</div>
+    <div class="demo-cols">
+      <div>
+        <div class="demo-canvas-wrap">
+          <canvas id="quant-canvas" width="620" height="360" aria-label="Analog sine wave with quantized digital samples"></canvas>
+        </div>
+        <div class="method-legend">
+          <span><span class="ml-line analog-line"></span>Analog signal</span>
+          <span><span class="ml-line digital-line"></span>Quantized digital values</span>
+          <span><span class="ml-dot sample-dot"></span>ADC samples</span>
+        </div>
+        <div class="controls">
+          <div class="control-group">
+            <label for="q-bits">Bit depth</label>
+            <input id="q-bits" type="range" min="2" max="16" step="1" value="4">
+            <span class="val" id="q-bits-val">4-bit</span>
+          </div>
+          <div class="control-group">
+            <label for="q-range">ADC range</label>
+            <select id="q-range">
+              <option value="2">-1 V to +1 V</option>
+              <option value="10">-5 V to +5 V</option>
+              <option value="20" selected>-10 V to +10 V</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label for="q-gain">Signal amplitude</label>
+            <input id="q-gain" type="range" min="0.5" max="10" step="0.1" value="8">
+            <span class="val" id="q-gain-val">8.0 V</span>
+          </div>
+        </div>
+      </div>
+      <div class="demo-right">
+        <div class="readout-box">
+          <strong>Available levels:</strong> <span id="q-levels">-</span><br>
+          <strong>Voltage step:</strong> <span id="q-step">-</span><br>
+          <strong>Mean absolute error:</strong> <span id="q-error">-</span><br>
+          <strong>Clipping:</strong> <span id="q-clipping">-</span>
+        </div>
+        <div class="check-card">
+          <strong>Try this:</strong> Set bit depth to 2 or 3. The digital signal becomes a staircase because many analog voltages are forced to share the same code.
+        </div>
+        <div class="check-card">
+          <strong>Important:</strong> Increasing the ADC range without increasing the signal amplitude makes each step larger. A large range prevents clipping, but it can waste resolution for small signals.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Bit Depth and Voltage Resolution</h3>
+  <div class="math-block">
+    $$\text{Number of levels} = 2^N \qquad
+    \text{Voltage step} \approx \frac{V_{\max} - V_{\min}}{2^N - 1}$$
+  </div>
+  <p>A 16-bit ADC has 65,536 levels. A 24-bit ADC has 16,777,216 levels. Higher bit depth reduces quantization error, but only if the rest of the acquisition system is quiet and well matched to the signal.</p>
+</section>
+
+<section id="sampling">
+  <h2><span class="section-num">6</span> Sampling, Nyquist Frequency, and Aliasing</h2>
+  <p><strong>Sampling</strong> records the signal value at regular intervals. If samples are taken every \(h\) seconds, the sampling frequency is:</p>
+  <div class="math-block">
+    $$f_s = \frac{1}{h}$$
+  </div>
+  <p>The <strong>Nyquist frequency</strong> is half the sampling rate:</p>
+  <div class="math-block">
+    $$f_N = \frac{f_s}{2}$$
+  </div>
+  <p>To represent a signal component without ambiguity, the sampling rate must be greater than twice the highest frequency present in the signal:</p>
+  <div class="math-block">
+    $$f_s > 2f_{\max}$$
+  </div>
+
+  <div class="callout danger">
+    <div class="callout-label">Aliasing Cannot Be Fixed Later</div>
+    Aliasing occurs during sampling. Once a high-frequency component has folded into the stored digital data as a false lower frequency, digital filtering cannot reliably recover the original signal.
+  </div>
+
+  <h3>A Signal Is Rarely Just One Frequency</h3>
+  <p>The Nyquist rule is written above as if a signal has a single frequency, but a physiological recording is really a mixture of many frequency components at once: a heartbeat's fundamental rhythm plus its harmonics, EMG energy spread across tens to hundreds of Hz, and higher-frequency noise from motion or electrical interference. \(f_{\max}\) means the highest frequency component with meaningful energy anywhere in that mixture, not the obvious repetition rate you can see by eye. That is precisely the question that <strong>frequency-domain analysis</strong> answers: next week's Fourier transform takes a digital signal and reports how much of it is made of each frequency, which is how \(f_{\max}\) gets determined in practice rather than guessed.</p>
+
+  <h3>The Aliasing Formula</h3>
+  <p>When \(f_s \le 2f_{\max}\), a sampled sine component does not disappear. It reappears at a lower, false frequency folded back into the range \(0\) to \(f_N\). For a single-frequency component sampled at rate \(f_s\), the apparent (aliased) frequency is:</p>
+  <div class="math-block">
+    $$f_{\text{alias}} = \left| f_{\text{signal}} - f_s \cdot \text{round}\!\left(\frac{f_{\text{signal}}}{f_s}\right) \right|$$
+  </div>
+  <p>This is the same folding rule the interactive figure below uses to compute the "Apparent frequency" readout. Because aliasing folds each frequency component independently, a signal with many components can develop many false ones at once — another reason a proper analog anti-aliasing filter must run before sampling, not after.</p>
+
+  <h3>Practical Sampling Examples</h3>
+  <table class="comparison-table">
+    <thead>
+      <tr><th>Signal</th><th>Typical Sampling Rate</th><th>Why</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Resting breathing</td><td>50 Hz</td><td>Slow changes; high time resolution is not usually needed.</td></tr>
+      <tr><td>Walking kinematics</td><td>100-200 Hz</td><td>Joint motion is relatively smooth but event timing matters.</td></tr>
+      <tr><td>Ground reaction force</td><td>1000 Hz or higher</td><td>Impact peaks can change rapidly.</td></tr>
+      <tr><td>Surface EMG</td><td>1000-2000 Hz</td><td>Useful energy often extends into hundreds of Hz.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="aliasing-demo">
+  <h2><span class="section-num">7</span> Interactive: Sampling Below Nyquist</h2>
+  <p>Use the sampling-rate slider to sample a sine wave. The top panel shows the original analog signal and the sampling points. The bottom panel shows the signal that would be reconstructed from those samples. When sampling is too slow, the reconstructed signal can become a slower false wave: the <strong>alias</strong>.</p>
+
+  <div class="figure-container">
+    <div class="fig-title">Aliasing When Sampling a Sine Wave</div>
+    <div class="demo-cols">
+      <div>
+        <div class="demo-canvas-wrap">
+          <canvas id="alias-canvas" width="620" height="460" aria-label="Original sine wave with samples above reconstructed alias signal"></canvas>
+        </div>
+        <div class="method-legend">
+          <span><span class="ml-line analog-line"></span>Original analog signal</span>
+          <span><span class="ml-line alias-line"></span>Reconstructed signal</span>
+          <span><span class="ml-dot sample-dot"></span>Samples</span>
+        </div>
+        <div class="controls">
+          <div class="control-group">
+            <label for="a-signal">Signal frequency</label>
+            <input id="a-signal" type="range" min="2" max="30" step="1" value="12">
+            <span class="val" id="a-signal-val">12 Hz</span>
+          </div>
+          <div class="control-group">
+            <label for="a-fs">Sampling rate</label>
+            <input id="a-fs" type="range" min="4" max="80" step="1" value="18">
+            <span class="val" id="a-fs-val">18 Hz</span>
+          </div>
+          <button class="run-btn secondary" id="a-good" type="button">Use safe rate</button>
+          <button class="run-btn secondary" id="a-bad" type="button">Show alias</button>
+        </div>
+      </div>
+      <div class="demo-right">
+        <div class="readout-box">
+          <strong>Nyquist frequency:</strong> <span id="a-nyquist">-</span><br>
+          <strong>Nyquist rule:</strong> <span id="a-rule">-</span><br>
+          <strong>Apparent frequency:</strong> <span id="a-alias">-</span><br>
+          <strong>Status:</strong> <span id="a-status">-</span>
+        </div>
+        <div class="check-card">
+          <strong>Try this:</strong> Keep the signal at 12 Hz and set sampling to 18 Hz. The Nyquist frequency is only 9 Hz, so the 12 Hz sine is stored as a false 6 Hz pattern.
+        </div>
+        <div class="check-card">
+          <strong>Prevention:</strong> Choose a sampling rate high enough for the signal and use an analog anti-aliasing low-pass filter before sampling.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="range">
+  <h2><span class="section-num">8</span> Clipping, Saturation, and Dynamic Range</h2>
+  <p><strong>Clipping</strong> occurs when the signal exceeds the measurable range of the acquisition system. If the ADC accepts -10 V to +10 V, any true signal above +10 V will be stored as +10 V.</p>
+  <p>Clipping is often visible because peaks become flat. The problem is that the true peak amplitude is lost. No later processing step can know how high the clipped signal really was.</p>
+
+  <div class="step-flow">
+    <div class="step">
+      <div class="step-num step-token">GAIN</div>
+      <div class="step-title">Too Little Gain</div>
+      <div class="step-desc">The signal uses only a small part of the ADC range. Quantization steps may become visible or meaningful changes may be lost.</div>
+    </div>
+    <div class="step">
+      <div class="step-num step-token">OK</div>
+      <div class="step-title">Appropriate Gain</div>
+      <div class="step-desc">The signal uses much of the range while leaving enough margin for unexpectedly large values.</div>
+    </div>
+    <div class="step">
+      <div class="step-num step-token">CLIP</div>
+      <div class="step-title">Too Much Gain</div>
+      <div class="step-desc">Large peaks exceed the input range and saturate. The stored peak is no longer trustworthy.</div>
+    </div>
+  </div>
+
+  <div class="callout intuition">
+    <div class="callout-label">Dynamic Range</div>
+    Dynamic range is the span between the smallest and largest signals a system can measure usefully. A good setup amplifies enough to resolve small changes, but not so much that large events clip.
+  </div>
+</section>
+
+<section id="quiz">
+  <h2><span class="section-num">9</span> Check Your Understanding</h2>
+  <p>Try answering each question before clicking it open. Work them in order — the later questions build on the sampling and aliasing ideas from Sections 6 and 7.</p>
+
+  <div class="check-list">
+    <details>
+      <summary>1. A goniometer signal is sampled at 200 Hz. What is the Nyquist frequency, and what does it mean for this recording?</summary>
+      <p>The Nyquist frequency is \(f_s / 2 = 100\) Hz. Only components of the joint-angle signal below 100 Hz can be represented without ambiguity; any true signal content at or above 100 Hz will alias into a false lower frequency instead of being recorded correctly.</p>
+    </details>
+
+    <details>
+      <summary>2. A 12 Hz sine component is sampled at 18 Hz. Using the aliasing formula from Section 6, what frequency will it appear as in the stored data?</summary>
+      <p>\(f_{\text{alias}} = |12 - 18 \cdot \text{round}(12/18)| = |12 - 18 \cdot 1| = 6\) Hz. The true 12 Hz component is stored as a false 6 Hz wave, matching the example in the Section 7 demo. Note that 18 Hz also fails the Nyquist rule here, since \(f_N = 9\) Hz is less than 12 Hz.</p>
+    </details>
+
+    <details>
+      <summary>3. Why must the anti-aliasing filter be an analog filter applied before the ADC, rather than a digital filter applied after?</summary>
+      <p>Aliasing happens at the moment of sampling. Once a high-frequency component has folded into a false lower frequency, the stored samples cannot distinguish it from a real low-frequency component. No digital filter applied afterward can tell them apart, so the only way to prevent aliasing is to remove the offending high frequencies from the analog voltage before it is sampled.</p>
+    </details>
+
+    <details>
+      <summary>4. Two setups record the same EMG signal: one with a 4-bit ADC, one with a 16-bit ADC, both using the same voltage range. Which produces a smaller voltage step per code, and why does that matter?</summary>
+      <p>The 16-bit ADC has a much smaller step, since step size is approximately \((V_{\max}-V_{\min})/(2^N-1)\) and \(2^{16}-1\) is far larger than \(2^4-1\). A smaller step means the quantized signal follows the true analog voltage more closely, reducing quantization error, provided the rest of the acquisition chain (amplifier noise, electrode contact) is not the limiting factor first.</p>
+    </details>
+
+    <details>
+      <summary>5. A researcher increases the ADC's input range from -5/+5 V to -10/+10 V without changing the amplifier gain on a small EMG signal. What happens to resolution, and why might this be a bad trade?</summary>
+      <p>The voltage step gets larger, since the same number of quantization levels now has to cover twice the range, so the smaller EMG signal now uses a smaller fraction of the ADC's levels and quantization error increases. The wider range prevents clipping on large signals but wastes resolution on a signal that never approaches the new limits; matching gain to the true signal amplitude is usually the better fix.</p>
+    </details>
+
+    <details>
+      <summary>6. How to choose sampling rate for biological signals</summary>
+      <p>The sampling rate should be at least twice the highest frequency component of interest in the signal (Nyquist criterion). In practice, it is often chosen to be 5-10 times higher than the maximum frequency to ensure accurate representation and to allow for anti-aliasing filtering. For example, if the highest frequency of interest in an EMG signal is 500 Hz, a sampling rate of at least 1000 Hz is required, but 2000-5000 Hz may be used for better fidelity.</p>
+    </details>
+  </div>
+</section>
+</main>
+
+<footer>
+  <p>BPK 304w - Inquiry and Measurement - Biological Signal Acquisition</p>
+</footer>
+
+<script src="../js/utils.js"></script>
+<script src="../js/signal-processing.js"></script>
+<script>
+renderMathInElement(document.body, {
+  delimiters: [
+    {left:'$$', right:'$$', display:true},
+    {left:'\\(', right:'\\)', display:false}
+  ]
+});
+</script>
+</body>
+</html>

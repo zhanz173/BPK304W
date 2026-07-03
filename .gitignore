@@ -7,3 +7,6 @@ Thumbs.db
 
 # Ignore markdown notes
 *.md
+
+# ingnore source
+notes/

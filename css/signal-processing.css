@@ -1,0 +1,256 @@
+/* Week 6 signal-processing page styles. */
+
+.pipeline {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(120px, 1fr));
+  gap: 10px;
+  margin: 28px 0;
+  align-items: stretch;
+}
+
+.pipe-step {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  font-family: var(--sans);
+  min-height: 150px;
+}
+
+.pipe-step span {
+  display: inline-flex;
+  width: 26px;
+  height: 26px;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-light);
+  color: var(--accent-dark);
+  border-radius: 50%;
+  font-family: var(--mono);
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.pipe-step strong {
+  display: block;
+  font-size: 0.9rem;
+  line-height: 1.25;
+  margin-bottom: 8px;
+}
+
+.pipe-step small {
+  display: block;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.pipe-arrow {
+  display: none;
+}
+
+.signal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 24px 0;
+}
+
+.signal-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 18px;
+}
+
+.signal-card h3 {
+  font-family: var(--sans);
+  font-size: 0.98rem;
+  color: var(--accent-dark);
+  margin: 0 0 8px;
+}
+
+.signal-card p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.demo-cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(240px, 0.85fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.demo-right {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.demo-canvas-wrap {
+  overflow-x: auto;
+}
+
+.readout-box,
+.check-card {
+  background: var(--sidenote-bg);
+  border-radius: 8px;
+  padding: 14px 16px;
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  line-height: 1.7;
+}
+
+.check-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+}
+
+.check-card strong {
+  color: var(--accent-dark);
+}
+
+.method-legend {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 14px 20px;
+  margin-top: 10px;
+  font-family: var(--sans);
+  font-size: 0.84rem;
+}
+
+.ml-dot,
+.ml-line {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+.ml-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+}
+
+.ml-line {
+  width: 22px;
+  height: 0;
+  border-top: 3px solid;
+}
+
+.analog-line {
+  border-color: #2563eb;
+}
+
+.digital-line,
+.sample-dot {
+  border-color: #d97706;
+  background: #d97706;
+}
+
+.alias-line {
+  border-color: #059669;
+}
+
+.sample-dot {
+  background: #d97706;
+}
+
+.control-group select {
+  min-width: 132px;
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--card-bg);
+  font-family: var(--sans);
+  font-size: 0.84rem;
+}
+
+.readout-ok {
+  color: #065f46;
+  font-weight: 700;
+}
+
+.readout-warn {
+  color: #92400e;
+  font-weight: 700;
+}
+
+.readout-danger {
+  color: #991b1b;
+  font-weight: 700;
+}
+
+.metadata-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 20px 0 28px;
+  font-family: var(--sans);
+}
+
+.metadata-grid div {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 11px 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.check-list {
+  display: grid;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.check-list details {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+
+.check-list summary {
+  cursor: pointer;
+  font-family: var(--sans);
+  font-weight: 700;
+  color: var(--accent-dark);
+}
+
+.check-list p {
+  margin: 10px 0 0;
+  color: var(--text-secondary);
+}
+
+code {
+  font-family: var(--mono);
+  font-size: 0.9em;
+  background: var(--sidenote-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
+@media (max-width: 860px) {
+  .pipeline {
+    grid-template-columns: 1fr;
+  }
+
+  .pipe-step {
+    min-height: auto;
+  }
+
+  .demo-cols,
+  .signal-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .metadata-grid {
+    grid-template-columns: 1fr;
+  }
+}

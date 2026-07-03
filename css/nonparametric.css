@@ -304,9 +304,16 @@
 
 .ind-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
   margin-bottom: 16px;
+}
+
+#chi-ind-module {
+  width: min(852px, calc(100vw - 48px));
+  max-width: none;
+  margin-left: 50%;
+  transform: translateX(-50%);
 }
 
 .ind-panel {
@@ -314,6 +321,7 @@
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 14px;
+  min-width: 0;
 }
 
 .ind-panel-title {
@@ -330,10 +338,36 @@
 .chi-exp-table,
 .chi-contrib-table {
   width: 100%;
-  min-width: 320px;
   border-collapse: collapse;
   font-family: var(--sans);
-  font-size: 0.82rem;
+  font-size: 0.75rem;
+  table-layout: fixed;
+}
+
+.chi-obs-table {
+  min-width: 470px;
+}
+
+.chi-exp-table,
+.chi-contrib-table {
+  min-width: 290px;
+}
+
+.chi-obs-table th:first-child {
+  width: 19%;
+}
+
+.chi-obs-table .total-col {
+  width: 18%;
+}
+
+.chi-exp-table th:first-child,
+.chi-contrib-table th:first-child {
+  width: 34%;
+}
+
+.ind-panel:first-child {
+  grid-column: 1 / -1;
 }
 
 .chi-obs-table th,
@@ -341,10 +375,11 @@
 .chi-contrib-table th {
   background: var(--accent);
   color: #fff;
-  padding: 7px 8px;
+  padding: 6px 6px;
   text-align: center;
   font-weight: 600;
-  font-size: 0.78rem;
+  font-size: 0.72rem;
+  overflow-wrap: anywhere;
 }
 
 .chi-obs-table tbody th,
@@ -353,12 +388,15 @@
   background: var(--sidenote-bg);
   color: var(--text);
   font-weight: 600;
+  overflow-wrap: normal;
+  word-break: normal;
+  white-space: nowrap;
 }
 
 .chi-obs-table td,
 .chi-exp-table td,
 .chi-contrib-table td {
-  padding: 7px 8px;
+  padding: 5px 5px;
   border: 1px solid var(--border);
   text-align: center;
   vertical-align: middle;
@@ -710,6 +748,12 @@
    =================================================== */
 
 @media (max-width: 800px) {
+  #chi-ind-module {
+    width: 100%;
+    margin-left: 0;
+    transform: none;
+  }
+
   .ind-grid {
     grid-template-columns: 1fr;
   }
@@ -729,6 +773,16 @@
 
   .demo-cols {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 801px) and (max-width: 1040px) {
+  #chi-ind-module {
+    width: min(900px, calc(100vw - 48px));
+  }
+
+  .ind-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
