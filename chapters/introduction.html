@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Page metadata -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+      name="description"
+      content="An introduction to statistical reasoning, sampling, variability, inference, and experimental design in biomedical physiology and kinesiology."
+    >
+
+    <title>Introduction to Statistics — BPK 304W</title>
+
+    <!-- Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600;700&amp;family=Source+Sans+3:wght@400;600;700&amp;display=swap"
+      rel="stylesheet"
+    >
+
+    <!-- Shared styles, followed by chapter-specific styles -->
+    <link rel="stylesheet" href="../css/base.css">
+    <link rel="stylesheet" href="../css/chapter.css">
+    <link rel="stylesheet" href="../css/introduction.css">
+  </head>
+
+  <body>
+    <a class="skip-link" href="#main-content">Skip to chapter content</a>
+
+    <!-- Chapter header -->
+    <header class="hero">
+      <a class="course-link" href="../index.html">BPK 304W · Course materials</a>
+
+      <div class="byline">Week 0 · Inquiry and Measurement</div>
+
+      <h1>Introduction to Statistics</h1>
+
+      <p class="subtitle">
+        Statistical reasoning and study design in biomedical physiology and kinesiology.
+      </p>
+    </header>
+
+    <!-- Chapter contents -->
+    <nav class="toc" aria-label="Chapter contents">
+      <h2>Contents</h2>
+
+      <ol>
+        <li><a href="#a-motivating-question">1. A Motivating Question</a></li>
+        <li><a href="#populations-samples-and-data">2. Populations, Samples, and Data</a></li>
+        <li><a href="#variability">3. Variability</a></li>
+        <li>
+          <a href="#descriptive-and-inferential-statistics">4. Descriptive and Inferential
+          Statistics</a>
+        </li>
+        <li><a href="#probability-a-model-for-chance">5. The Role of Probability</a></li>
+        <li><a href="#statistical-hypothesis-tests">6. Statistical Hypothesis Tests</a></li>
+        <li>
+          <a href="#the-statistical-investigation-process">8. The Statistical Investigation
+          Process</a>
+        </li>
+        <li><a href="#returning-to-the-drug-study">9. Returning to the Drug Study</a></li>
+      </ol>
+    </nav>
+
+    <!-- Chapter content -->
+    <main class="article" id="main-content" tabindex="-1">
+      <p>
+        Statistics provides methods for describing data, estimating population characteristics, and
+        evaluating scientific hypotheses under uncertainty.
+      </p>
+
+      <p>
+        For example, two people given the same exercise program may improve by different amounts. A
+        person's blood pressure may change from one visit to the next. Two laboratories may obtain
+        slightly different values from the same type of sample. Accounting for this variation is
+        essential to the interpretation of scientific evidence.
+      </p>
+
+      <p>
+        This course develops practical statistical analysis skills for biomedical physiology and
+        kinesiology. Students will describe patterns, quantify uncertainty, compare groups, evaluate
+        relationships, and assess whether study designs support the intended conclusions.
+      </p>
+
+      <!-- 1 A Motivating Question -->
+      <section id="a-motivating-question" aria-labelledby="a-motivating-question-heading">
+        <h2 id="a-motivating-question-heading">
+          <span class="section-num">1</span> A Motivating Question
+        </h2>
+
+        <p>
+          Consider a hypothetical study in which 85% of patients receiving a new drug meet a
+          prespecified blood-pressure control criterion, compared with a historical estimate of
+          approximately 80% for the current treatment. The new drug is more expensive and may cause
+          additional side effects. Should it be adopted?
+        </p>
+
+        <p>
+          The observed difference is five percentage points. These percentages alone do not
+          establish treatment superiority, particularly because the comparison uses a historical
+          estimate. Evaluation requires the following information:
+        </p>
+
+        <ul class="list-spaced">
+          <li>How many patients were studied?</li>
+          <li>How were the patients selected and assigned to treatment?</li>
+          <li>Was there an appropriate comparison group?</li>
+          <li>How much natural patient-to-patient variation was present?</li>
+          <li>Could measurement error, bias, or chance explain the observed difference?</li>
+          <li>Is the improvement large enough to matter clinically?</li>
+          <li>Do the benefits outweigh the costs and harms?</li>
+        </ul>
+
+        <p>
+          If the study were repeated with a new sample, the observed success rate might be 83%, 80%,
+          or even 75%. Statistical methods quantify sampling uncertainty under explicit assumptions.
+          They do not, by themselves, distinguish a treatment effect from bias or confounding.
+        </p>
+
+        <p>
+          This distinction appears throughout biomedical science. A strength-training program may
+          increase average jump height, but would the improvement occur in a new group of athletes?
+          A wearable sensor may agree with a laboratory instrument on average, but is its error
+          small enough for clinical use? A rehabilitation intervention may reduce pain scores, but
+          was the change caused by the intervention or by recovery over time?
+        </p>
+      </section>
+
+      <!-- 2 Populations, Samples, and Data -->
+      <section
+        id="populations-samples-and-data"
+        aria-labelledby="populations-samples-and-data-heading"
+      >
+        <h2 id="populations-samples-and-data-heading">
+          <span class="section-num">2</span> Populations, Samples, and Data
+        </h2>
+
+        <p>
+          A <strong>population</strong> is the complete group about which we want to draw a
+          conclusion. A <strong>sample</strong> is the smaller group that we actually observe. A
+          <strong>variable</strong> is a characteristic measured on each individual or experimental
+          unit, such as heart rate, force, treatment group, pain rating, or recovery status.
+        </p>
+
+        <p>
+          The population is defined by the research question, not simply by the people who are easy
+          to reach. The observed sample consists of the units for which data are collected. Its
+          relationship to the target population depends on eligibility criteria, recruitment,
+          participation, and missing data.
+        </p>
+
+        <h3>Example 1: Resting Heart Rate</h3>
+
+        <p>
+          Suppose researchers want to estimate the average resting heart rate of undergraduate
+          students at a university. They randomly select 120 students and measure each student's
+          resting heart rate.
+        </p>
+
+        <div
+          class="table-scroll"
+          role="region"
+          aria-label="Resting heart rate: statistical terms"
+          tabindex="0"
+        >
+          <table class="comparison-table">
+            <caption>Resting heart rate: statistical terms</caption>
+            <thead>
+              <tr>
+                <th scope="col">Statistical term</th>
+                <th scope="col">Meaning in this study</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Population</td>
+                <td>All undergraduate students at the university</td>
+              </tr>
+              <tr>
+                <td>Sample</td>
+                <td>The 120 students who were selected and measured</td>
+              </tr>
+              <tr>
+                <td>Variable</td>
+                <td>Resting heart rate, measured in beats per minute</td>
+              </tr>
+              <tr>
+                <td>Parameter</td>
+                <td>The unknown mean resting heart rate of all undergraduate students</td>
+              </tr>
+              <tr>
+                <td>Statistic</td>
+                <td>The mean resting heart rate calculated from the 120 students</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>
+          The population mean is a <strong>parameter</strong> because it describes the entire
+          population. The sample mean is a <strong>statistic</strong> because it is calculated from
+          the observed sample. Researchers use the calculated sample statistic to estimate the
+          unknown population parameter.
+        </p>
+
+        <div class="callout warning">
+          <div class="callout-label">Sample mean vs. population mean</div>
+          The population mean is a
+
+          <strong>parameter</strong>
+          because it describes the entire population. The sample mean is a
+
+          <strong>statistic</strong>
+          because it is calculated from the observed sample. Researchers use the calculated sample
+          statistic to estimate the unknown population parameter.
+        </div>
+
+        <h3>Example 2: A Training Program</h3>
+
+        <p>
+          A researcher recruits 30 varsity soccer players to study whether a six-week strength
+          program improves vertical jump height.
+        </p>
+
+        <ul class="list-spaced">
+          <li>
+            If the research question concerns these 30 players only, the 30 players are the
+            population of interest.
+          </li>
+          <li>
+            If the goal is to draw conclusions about all varsity soccer players, the 30 participants
+            are a sample from that larger population.
+          </li>
+          <li>
+            If the players are recruited from one readily accessible team, they form a
+            <strong>convenience sample</strong> and may not represent players from other teams,
+            competitive levels, ages, or training backgrounds.
+          </li>
+        </ul>
+
+        <p>
+          The same group of people can therefore be a population for one research question and a
+          sample for another depending on the research question.
+        </p>
+
+        <p>
+          We usually study a sample because measuring an entire population would be infeasible. The
+          challenge is that different samples from the same population will produce different
+          results. A sample mean is therefore an estimate of a population mean, not a perfect copy
+          of it.
+        </p>
+
+        <p>
+          Good sampling helps make a sample representative of its target population. In
+          <strong>simple random sampling</strong>, every possible sample of a given size has the
+          same chance of being selected. Random sampling supports population inference when the
+          sampling frame adequately covers the target population and nonresponse is appropriately
+          addressed. It does not guarantee that a particular sample will closely resemble the
+          population. In practice, convenience samples are common, but they may limit the population
+          to which the findings can reasonably apply.
+        </p>
+
+        <p>For each study, we need to answer two related questions:</p>
+
+        <ol class="list-spaced">
+          <li>
+            <strong>Who was sampled?</strong> This affects whether the result can be generalized to
+            a broader population.
+          </li>
+          <li>
+            <strong>How were treatments assigned?</strong> This affects whether differences between
+            conditions can be interpreted as causal effects.
+          </li>
+        </ol>
+
+        <p>
+          Random sampling and random assignment solve different problems. A study can have one
+          without the other.
+        </p>
+      </section>
+
+      <!-- 3 Variability -->
+      <section id="variability" aria-labelledby="variability-heading">
+        <h2 id="variability-heading"><span class="section-num">3</span> Variability</h2>
+
+        <p>
+          If every person responded identically, every instrument measured perfectly, and every
+          repeated study produced the same result, statistical methods would rarely be needed.
+          Statistical analysis characterizes observed patterns and the variation that affects their
+          interpretation.
+        </p>
+
+        <p>Variation can arise from several sources:</p>
+
+        <ul class="list-spaced">
+          <li>
+            <strong>Biological variability:</strong> people differ in anatomy, physiology,
+            behaviour, genetics, training history, and health.
+          </li>
+          <li>
+            <strong>Measurement variability:</strong> instruments have limited precision, assessors
+            make errors, and testing conditions change.
+          </li>
+          <li>
+            <strong>Sampling variability:</strong> a random sample may contain more high or low
+            values simply by chance.
+          </li>
+          <li>
+            <strong>Experimental variability:</strong> adherence, treatment delivery, environmental
+            conditions, and uncontrolled factors may differ.
+          </li>
+        </ul>
+
+        <p>
+          Statistical reasoning evaluates an estimated effect in relation to its uncertainty. For a
+          fixed study design and sample size, a difference of 5 mmHg is estimated more precisely
+          when measurements have lower variability. Clinical importance must be assessed separately
+          from statistical precision. The size of the effect, the amount of variability, and the
+          number of observations all influence the strength of the evidence.
+        </p>
+      </section>
+
+      <!-- 4 Descriptive and Inferential Statistics -->
+      <section
+        id="descriptive-and-inferential-statistics"
+        aria-labelledby="descriptive-and-inferential-statistics-heading"
+      >
+        <h2 id="descriptive-and-inferential-statistics-heading">
+          <span class="section-num">4</span> Descriptive and Inferential Statistics
+        </h2>
+
+        <p>
+          <strong>Descriptive statistics</strong> summarize the data that were observed. Tables,
+          graphs, means, medians, proportions, ranges, and standard deviations help us see the
+          centre, spread, shape, and unusual features of a dataset.
+        </p>
+
+        <p>
+          <strong>Inferential statistics</strong> go beyond the observed data. They use data and a
+          statistical model to estimate population quantities, evaluate hypotheses, and quantify
+          uncertainty, subject to assumptions about sampling, study design, and the model.
+        </p>
+
+        <p>
+          For example, reporting that the average resting heart rate of 40 participants was 67 beats
+          per minute is descriptive. Using those data to estimate the average resting heart rate in
+          a larger population, together with a margin of error, is inferential.
+        </p>
+
+        <h3>Example: One Dataset, Two Types of Statements</h3>
+
+        <p>
+          Imagine that 40 students complete a six-week aerobic training program. Their mean maximal
+          oxygen uptake (V̇O₂max) increases from 42 to 45 mL/kg/min.
+        </p>
+
+        <p>
+          <strong>Descriptive statements</strong> report only what was observed in these 40
+          students:
+        </p>
+
+        <ul class="list-spaced">
+          <li>The sample contained 40 students.</li>
+          <li>Mean V̇O₂max increased by 3 mL/kg/min.</li>
+          <li>Thirty-two students improved and eight did not.</li>
+          <li>
+            The changes can be displayed with a graph and summarized with a mean and standard
+            deviation.
+          </li>
+        </ul>
+
+        <p>These statements do not extend beyond the collected data.</p>
+
+        <p>
+          <strong>Inferential statements</strong> use the sample to make a claim about a larger
+          population or process:
+        </p>
+
+        <ul class="list-spaced">
+          <li>The average improvement among similar students is estimated to be 3 mL/kg/min.</li>
+          <li>
+            A confidence interval provides an interval estimate of the population mean change under
+            the assumed model. A method with 95% coverage would produce intervals containing the
+            true parameter in 95% of repeated studies under its assumptions.
+          </li>
+          <li>
+            A statistical test evaluates the observed mean change against a null hypothesis of zero
+            population mean change, using the assumed distribution of paired differences.
+          </li>
+          <li>
+            Generalization to the target population depends on how the students were sampled.
+            Without an appropriate comparison condition, the mean change cannot be attributed solely
+            to the training program.
+          </li>
+        </ul>
+
+        <div
+          class="table-scroll"
+          role="region"
+          aria-label="Distinguishing descriptive and inferential questions"
+          tabindex="0"
+        >
+          <table class="comparison-table">
+            <caption>Distinguishing descriptive and inferential questions</caption>
+            <thead>
+              <tr>
+                <th scope="col">Question</th>
+                <th scope="col">Descriptive or inferential?</th>
+                <th scope="col">Why?</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>What was the mean change among the 40 participants?</td>
+                <td>Descriptive</td>
+                <td>It summarizes the observed sample.</td>
+              </tr>
+              <tr>
+                <td>What proportion of the 40 participants improved?</td>
+                <td>Descriptive</td>
+                <td>It refers only to collected observations.</td>
+              </tr>
+              <tr>
+                <td>What is the estimated mean change in the target population?</td>
+                <td>Inferential</td>
+                <td>It generalizes from the sample to a population.</td>
+              </tr>
+              <tr>
+                <td>
+                  How compatible are the paired changes with a null hypothesis of zero population
+                  mean change?
+                </td>
+                <td>Inferential</td>
+                <td>It uses a probability model to evaluate a hypothesis.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>
+          <strong>Descriptive statistics summarize the observed sample; inferential statistics use a
+          model to draw conclusions beyond those observations.</strong>
+        </p>
+
+        <p>
+          Inference quantifies uncertainty under specified assumptions. It does not automatically
+          account for uncertainty arising from bias, measurement problems, or model
+          misspecification.
+        </p>
+      </section>
+
+      <!-- 5 Probability: A Model for Chance -->
+      <section
+        id="probability-a-model-for-chance"
+        aria-labelledby="probability-a-model-for-chance-heading"
+      >
+        <h2 id="probability-a-model-for-chance-heading">
+          <span class="section-num">5</span> The Role of Probability
+        </h2>
+
+        <p>
+          Probability connects descriptive statistics to statistical inference. It provides a
+          mathematical model for the outcomes that could occur when a study is repeated under
+          similar conditions.
+        </p>
+
+        <figure class="figure-container">
+          <img
+            src="../assets/images/week0/relationship_between_prob_and_stats.png"
+            alt="Probability proceeds from population to sample; statistical inference proceeds from sample to population."
+            width="1300"
+            height="712"
+            loading="lazy"
+            decoding="async"
+          >
+          <figcaption>
+            <strong>Figure 1. Probability and statistical inference.</strong>
+            Probability uses an assumed population model to describe possible sample outcomes.
+            Statistical inference uses observed sample data to estimate population characteristics
+            and evaluate hypotheses, subject to assumptions about sampling and the statistical model.
+          </figcaption>
+        </figure>
+
+        <p>Probability allows us to ask questions such as:</p>
+
+        <p>
+          How can one sample tell us anything about samples we never observed? The observed dataset is only one possible outcome of a study. Probability helps us reason
+          about the outcomes that we did not observe but could plausibly have obtained. This connection between observed data and possible repeated data is the foundation of statistical inference.
+        </p>
+
+        <h3>Gaussian Distributions and the Central Limit Theorem</h3>
+        <p>One of the most important probability models in statistics is the Gaussian distribution, also called the normal distribution.</p>
+        <p>
+          The <strong>Gaussian (normal) distribution</strong> is a symmetric, bell-shaped
+          probability distribution described by its mean and standard deviation. Some statistical
+          models assume that observations or model errors follow this distribution. Such assumptions
+          require evaluation; biomedical measurements are not necessarily normally distributed.
+        </p>
+
+        <p>
+          The <strong>Central Limit Theorem (CLT)</strong> states that, for independent and
+          identically distributed observations with finite mean and finite, positive variance, the
+          standardized sample mean approaches a standard normal distribution as the sample size
+          increases. Thus, a sample mean can have an approximately normal sampling distribution even
+          when the underlying observations are not normally distributed.
+        </p>
+
+        <p>
+          The CLT concerns the distribution of <strong>sample means</strong> across repeated samples, not the
+          distribution of individual observations. The required sample size depends on the
+          population distribution; there is no universal threshold that guarantees an adequate
+          approximation. Dependence and extreme distributions require additional consideration.
+          These ideas are developed further in Week 1.
+        </p>
+      </section>
+
+      <!-- 6 Statistical Hypothesis Tests -->
+      <section
+        id="statistical-hypothesis-tests"
+        aria-labelledby="statistical-hypothesis-tests-heading"
+      >
+        <h2 id="statistical-hypothesis-tests-heading">
+          <span class="section-num">6</span> Statistical Hypothesis Tests
+        </h2>
+
+        <p>
+          A <strong>statistical hypothesis test</strong> evaluates a specified <strong>null
+          hypothesis</strong> using a test statistic and its distribution under that hypothesis. The
+          <strong>p-value</strong> is the probability, assuming the null hypothesis and the other
+          model assumptions hold, of obtaining a test statistic at least as extreme as the observed
+          value, in the direction or directions specified by the alternative hypothesis.
+        </p>
+
+        <p>
+          A small p-value indicates incompatibility between the data and the null hypothesis under
+          the assumed model. It does <strong>not</strong> tell us the probability that the null
+          hypothesis is true, prove that an effect exists, or tell us whether an effect is
+          important.
+        </p>
+
+        <p>Sound interpretation combines several pieces of information:</p>
+
+        <ul class="list-spaced">
+          <li>the estimated effect and its direction;</li>
+          <li>the variability in the data;</li>
+          <li>the sample size;</li>
+          <li>a confidence interval;</li>
+          <li>the p-value;</li>
+          <li>the practical or clinical importance of the effect; and</li>
+          <li>the quality of the study design.</li>
+        </ul>
+
+        <p>
+          Statistical decisions can be wrong. A <strong>Type I error</strong> is rejection of a true
+          null hypothesis. A <strong>Type II error</strong> is failure to reject a false null
+          hypothesis. The significance level, α, specifies a nominal Type I error rate for a valid
+          testing procedure. Statistical power, 1 − β, is the probability of rejecting the null
+          hypothesis for a specified alternative; it depends on effect size, sample size,
+          variability, study design, and α. Failure to reject the null hypothesis does not establish
+          that it is true.
+        </p>
+
+        <p>
+          A threshold such as p &lt; 0.05 is a decision rule, not a measure of scientific
+          importance. Statistical significance must be interpreted alongside effect size,
+          uncertainty, study quality, and practical or clinical relevance.
+        </p>
+      </section>
+
+      <!-- 7 The Statistical Investigation Process -->
+      <section
+        id="the-statistical-investigation-process"
+        aria-labelledby="the-statistical-investigation-process-heading"
+      >
+        <h2 id="the-statistical-investigation-process-heading">
+          <span class="section-num">7</span> The Statistical Investigation Process
+        </h2>
+
+        <p>A statistical investigation generally follows this iterative process:</p>
+
+        <ol class="list-spaced">
+          <li>
+            <strong>Scientific question.</strong> Define the population, variables,
+            and effect of interest.
+          </li>
+          <li>
+            <strong>Study design.</strong> Decide how observations will be sampled, treatments
+            assigned, variables measured, and bias controlled.
+          </li>
+          <li>
+            <strong>Data collection and inspection.</strong> Check data quality and visualize the
+            distribution before applying a model.
+          </li>
+          <li>
+            <strong>Data summary.</strong> Summarize centre, spread, group
+            differences, and relationships.
+          </li>
+          <li>
+            <strong>Model selection.</strong> State the assumptions that connect the data
+            to the scientific question.
+          </li>
+          <li>
+            <strong>Interpretation.</strong> Consider effect size, uncertainty, study
+            limitations, and practical importance.
+          </li>
+        </ol>
+      </section>
+
+      <!-- 8 Returning to the Drug Study -->
+      <section
+        id="returning-to-the-drug-study"
+        aria-labelledby="returning-to-the-drug-study-heading"
+      >
+        <h2 id="returning-to-the-drug-study-heading">
+          <span class="section-num">8</span> Returning to the Drug Study
+        </h2>
+
+        <p>
+          Suppose the study enrolled <strong>400 patients</strong>, of whom <strong>340 met the
+          prespecified blood-pressure control criterion</strong> after receiving the new drug.
+          The observed success proportion is therefore 340 / 400 = 0.85. With the sample size
+          specified, an approximate calculation can assess how unusual this result would be
+          under a success probability of 0.80.
+        </p>
+
+        <h3>Specify the assumptions and hypothesis</h3>
+
+        <p>
+          For this calculation, treat <strong>0.80 as a fixed, known benchmark</strong>, rather
+          than an estimate with its own sampling uncertainty. Assume that each patient contributes
+          one binary outcome, that outcomes are independent, and that patients share a common
+          success probability. The outcome definition and follow-up period must also be comparable
+          to those used for the benchmark.
+        </p>
+
+        <p>
+          Let π denote the population success probability for patients receiving the new drug.
+          Specify the null hypothesis H<sub>0</sub>: π = 0.80 and the two-sided alternative
+          H<sub>A</sub>: π ≠ 0.80, with a significance level of α = 0.05 chosen before examining
+          the results. This test evaluates a difference in either direction.
+        </p>
+
+        <h3>Calculate the standard error and test statistic</h3>
+
+        <p>
+          Under the null hypothesis, the standard error of the sample proportion describes how
+          much that proportion varies across repeated samples of the same size. For independent
+          binary outcomes, it is calculated as follows:
+        </p>
+
+        <div class="math-block" aria-label="Standard error under the null hypothesis">
+          SE<sub>0</sub> = √[π<sub>0</sub>(1 − π<sub>0</sub>) / n]<br>
+          = √[(0.80 × 0.20) / 400] = 0.02
+        </div>
+
+        <p>
+          Here, π<sub>0</sub> = 0.80 is the null success probability and n = 400 is the sample
+          size. The standard error is <strong>two percentage points</strong>. The observed
+          difference of five percentage points is therefore 2.5 standard errors above the null
+          value:
+        </p>
+
+        <div class="math-block" aria-label="Standardized difference from the benchmark">
+          z = (observed proportion − null proportion) / SE<sub>0</sub><br>
+          = (0.85 − 0.80) / 0.02 = 2.50
+        </div>
+
+        <h3>Interpret the approximate result</h3>
+
+        <p>
+          Under the null hypothesis, the expected numbers of successes and failures are
+          400 × 0.80 = 320 and 400 × 0.20 = 80. Both are sufficiently large for a normal
+          approximation in this example. A two-sided test at α = 0.05 rejects the null hypothesis
+          when |z| exceeds approximately 1.96. A useful preliminary calculation is therefore to
+          determine whether the observed difference exceeds approximately two standard errors.
+        </p>
+
+        <p>
+          Since 2.50 &gt; 1.96, the result is <strong>statistically significant at the 5% level</strong>.
+          The corresponding two-sided p-value is approximately <strong>0.012</strong>, calculated
+          from the two tails of the standard normal distribution beyond −2.50 and 2.50. Under
+          the null hypothesis and the stated assumptions, a test statistic at least this extreme
+          would occur in approximately 1.2% of repeated studies. This is a normal approximation
+          without a continuity correction; an exact binomial test can give a somewhat different
+          p-value.
+        </p>
+
+        <h3>Examine the role of sample size</h3>
+
+        <p>
+          If only 100 patients had been studied and 85 had met the criterion, the observed
+          proportion would still be 85%, but the standard error would be larger:
+        </p>
+
+        <div
+          class="table-scroll"
+          role="region"
+          aria-label="Sample size and approximate statistical significance"
+          tabindex="0"
+        >
+          <table class="comparison-table">
+            <caption>The same observed proportion at two sample sizes</caption>
+            <thead>
+              <tr>
+                <th scope="col">Observed successes</th>
+                <th scope="col">Null standard error</th>
+                <th scope="col">z</th>
+                <th scope="col">Approximate two-sided p-value</th>
+                <th scope="col">Decision at α = 0.05</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>85 / 100 (85%)</td>
+                <td>0.04 (4 percentage points)</td>
+                <td>1.25</td>
+                <td>0.211</td>
+                <td>Do not reject H<sub>0</sub></td>
+              </tr>
+              <tr>
+                <td>340 / 400 (85%)</td>
+                <td>0.02 (2 percentage points)</td>
+                <td>2.50</td>
+                <td>0.012</td>
+                <td>Reject H<sub>0</sub></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>
+          Increasing the sample size fourfold halves the standard error under this model.
+          The estimated difference remains five percentage points, but it is estimated more
+          precisely. The nonsignificant result with 100 patients does not establish that the
+          population success probability equals 80%.
+        </p>
+
+        <div class="callout">
+          <div class="callout-label">Statistical Significance vs. Effect Size</div>
+          <p>
+            While a larger sample size successfully refutes the fixed 80% success rate model,
+             statistical rejection does not automatically prove the new drug's clinical superiority
+          </p>
+          <p>
+            A five-percentage-point improvement may be mathematically significant, but it does not inherently translate into a meaningful benefit for patients. Ultimately, adoption cannot be decided by a p-value alone;
+             it requires a pragmatic evaluation of whether this marginal gain justifies the accompanying surge in costs and adverse side effects.
+          </p>
+        </div>
+      </section>
+
+      <div class="note-muted mt-24">
+        References:
+        <a class="link-accent" href="https://ndl.ethernet.edu.et/bitstream/123456789/37620/1/William%20Navidi_2015.pdf">Statistics
+        for Engineers and Scientists</a>
+      </div>
+
+      <!-- Course navigation -->
+      <nav class="chapter-navigation" aria-label="Course navigation">
+        <a href="../index.html">Course overview</a> <a href="normal-distribution.html">Next:
+        Descriptive Statistics &amp; the CLT →</a>
+      </nav>
+
+      <footer>BPK 304W · Simon Fraser University</footer>
+    </main>
+  </body>
+</html>

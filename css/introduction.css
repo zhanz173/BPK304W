@@ -1,0 +1,34 @@
+.course-link { display: inline-block; font-family: var(--sans); margin-bottom: 28px; }
+a { color: var(--accent-dark); text-underline-offset: 3px; }
+a:focus-visible, .table-scroll:focus-visible { outline: 3px solid var(--accent); outline-offset: 5px; }
+.skip-link { position: absolute; left: 16px; top: -100px; padding: 8px 16px; background: var(--card-bg); z-index: 10; }
+.skip-link:focus { top: 16px; }
+.chapter-overview { padding-top: 32px; }
+.table-scroll { overflow-x: auto; margin: 24px 0; }
+.table-scroll table { width: 100%; margin: 0; }
+caption { text-align: left; font-family: var(--sans); font-weight: 600; margin-bottom: 12px; color: var(--text-secondary); }
+section { scroll-margin-top: 24px; }
+.figure-container figcaption {
+  margin-top: 16px;
+  font-family: var(--sans);
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+.chapter-navigation { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 20px; padding: 32px 0; border-top: 1px solid var(--border); font-family: var(--sans); }
+footer { padding: 24px; color: var(--text-secondary); }
+@media (max-width: 640px) {
+  .hero { padding-top: 40px; }
+  .toc ol { flex-direction: column; }
+  h2 { font-size: 1.5rem; line-height: 1.35; }
+  .comparison-table { min-width: 540px; }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+@media print {
+  .skip-link, .toc, .chapter-navigation { display: none; }
+  .hero { padding-top: 0; }
+  section { padding-top: 24px; }
+  .table-scroll { overflow: visible; }
+  h2, h3 { break-after: avoid; }
+  tr { break-inside: avoid; }
+}
